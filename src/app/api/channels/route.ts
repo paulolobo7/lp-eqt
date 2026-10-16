@@ -1,0 +1,6 @@
+import { getServices } from "@/lib/services";
+
+/** GET -> { canais, simulacao }. No MVP, valores são {{CANAL_EQUATORIAL}}. */
+export async function GET() {
+  return Response.json(await getServices().channels.listar());
+}

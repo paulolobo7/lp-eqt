@@ -1,0 +1,4 @@
+Áudios PLACEHOLDER (só um sinal curto + silêncio, na duração indicada na tela).
+Trocar pela locução real validada pela Equatorial, mantendo os mesmos nomes de arquivo,
+ou atualizar os caminhos em src/content/site.ts e src/content/quiz.ts.
+A transcrição exibida na tela fica em src/content.

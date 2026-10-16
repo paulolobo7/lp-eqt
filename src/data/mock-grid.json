@@ -1,0 +1,27 @@
+{
+  "_aviso": "DADOS FICTÍCIOS. Linhas, subestações, bairros, limites e contagens inventados para o MVP do hackathon. A área fica em coordenadas próximas de (0, 0), no oceano, de propósito. Substituir pela camada georreferenciada de ativos da Equatorial.",
+  "faixas": { "altoAteM": 300, "medioAteM": 1200 },
+  "linhas": [
+    {
+      "id": "lt-01",
+      "nome": "Linha de transmissão LT-01 (fictícia)",
+      "pontos": [
+        { "lat": -0.0006, "lng": -0.02 },
+        { "lat": 0.0018, "lng": 0.0 },
+        { "lat": 0.0042, "lng": 0.02 }
+      ]
+    }
+  ],
+  "subestacoes": [
+    { "id": "se-01", "nome": "Subestação SE-01 (fictícia)", "lat": -0.01, "lng": 0.012 }
+  ],
+  "bairros": [
+    { "id": "vila-esperanca", "nome": "Vila Esperança", "lat": 0.0035, "lng": -0.002, "descricao": "Linha de transmissão cruza o bairro", "vizinhos": 128 },
+    { "id": "jardim-das-torres", "nome": "Jardim das Torres", "lat": -0.014, "lng": 0.012, "descricao": "Subestação próxima", "vizinhos": 86 },
+    { "id": "parque-das-aguas", "nome": "Parque das Águas", "lat": -0.016, "lng": -0.018, "descricao": "Só rede de distribuição", "vizinhos": 41 }
+  ],
+  "outrosBairros": [
+    { "id": "alto-do-sol", "nome": "Alto do Sol", "vizinhos": 63 },
+    { "id": "boa-vista", "nome": "Boa Vista", "vizinhos": 22 }
+  ]
+}
