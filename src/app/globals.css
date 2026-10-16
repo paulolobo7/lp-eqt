@@ -40,15 +40,22 @@
 }
 
 /* ---------- Base e mobile-native ---------- */
+:root {
+  /* Altura da história em rolagem e folga do cabeçalho fixo (usadas também pelas pausas da história). */
+  --historia-altura: 520svh;
+  --rolagem-topo: 80px;
+}
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+  scroll-padding-top: var(--rolagem-topo);
   background: var(--color-noite);
   color-scheme: dark;
 }
 body {
+  /* Referência da .historia-livre, que vai do fim da história até o fim da página. */
+  position: relative;
   margin: 0;
   background: var(--color-noite);
   color: var(--color-texto);
@@ -77,13 +84,16 @@ button,
   user-select: none;
   -webkit-user-select: none;
 }
-a {
-  color: var(--color-ciano);
-  text-underline-offset: 3px;
-}
-@media (hover: hover) and (pointer: fine) {
-  a:hover {
-    color: var(--color-ciano-claro);
+/* Na camada base: fora dela, a cor do link venceria utilitários como text-texto. */
+@layer base {
+  a {
+    color: var(--color-ciano);
+    text-underline-offset: 3px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    a:hover {
+      color: var(--color-ciano-claro);
+    }
   }
 }
 
@@ -274,19 +284,32 @@ a {
 }
 @keyframes vat-hint {
   50% {
-    transform: translateY(6px);
-  }
-}
-@keyframes vat-pulso {
-  50% {
-    opacity: 0.42;
+    transform: translateY(3px);
   }
 }
 .entra {
   animation: vat-in 220ms var(--ease-out) both;
 }
-.vat-pulso {
-  animation: vat-pulso 4.8s ease-in-out infinite;
+
+/*
+ * Flash de luz que corre pelos cabos (design: vatPulse). Movimento constante: linear.
+ * Os cabos usam pathLength="1000"; o traço de 60 sai de antes do início (80) e termina
+ * depois do fim (-1020), e o intervalo de 1100 garante um flash por vez em cada cabo.
+ * Ele corre em 60% do ciclo e descansa no resto: lê como flash, não como fluxo contínuo.
+ */
+@keyframes vat-flash {
+  from {
+    stroke-dashoffset: 80;
+  }
+  60%,
+  to {
+    stroke-dashoffset: -1020;
+  }
+}
+.vat-flash {
+  stroke-dasharray: 60 1100;
+  stroke-dashoffset: 80;
+  animation: vat-flash 5s linear infinite;
 }
 
 /* ---------- História em rolagem (Hero + Problema) ---------- */
@@ -333,8 +356,67 @@ a {
 
 .historia {
   position: relative;
-  height: 520svh;
+  height: var(--historia-altura);
   --m: 1;
+  /*
+   * Câmera do parallax (referência: skiper29 "Siena parallax"): avança nos três riscos
+   * (0 no herói → 1 na emergência) e recua de uma vez no amanhecer, revelando o bairro.
+   * Como a rolagem para em cada estado, o movimento acontece só na troca de estado.
+   */
+  --cam: clamp(0, min(var(--p) / 0.75, (1 - var(--p)) / 0.25), 1);
+}
+/*
+ * Zoom da câmera na base da torre (onde ficam a cerca, a placa e a faixa de isolamento): o céu
+ * sobe e as casas ficam quase paradas. As camadas se deslocam por profundidade (gerar-cena.ts).
+ */
+.historia-camera {
+  transform: scale(calc(1 + var(--cam) * 0.1 * var(--m)));
+  transform-origin: 69% 72%;
+  will-change: transform;
+}
+
+/*
+ * Pausas da história: a rolagem para em cada estado (centro de cada patamar, p = k/4), e um
+ * gesto avança um estado só (snap-stop). Depois da história, .historia-livre é uma área de
+ * snap maior que a tela: dentro dela a rolagem é livre. O snap só fica ligado enquanto a
+ * .historia-faixa (do topo até uma tela depois da história; ver pausas-historia.tsx) aparece,
+ * e dali para baixo a rolagem é 100% nativa (o iOS tem falhas de inércia em áreas de snap altas).
+ * O top soma --rolagem-topo porque o snap alinha ao scroll-padding-top.
+ */
+.historia-pausa {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  top: calc(var(--k) * (var(--historia-altura) - 100svh) / 4 + var(--rolagem-topo));
+  pointer-events: none;
+}
+.historia-livre,
+.historia-faixa {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  pointer-events: none;
+}
+.historia-livre {
+  top: var(--historia-altura);
+  bottom: 0;
+}
+.historia-faixa {
+  top: 0;
+  height: calc(var(--historia-altura) + 100svh);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.pausas-historia {
+    scroll-snap-type: y mandatory;
+  }
+  .historia-pausa {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .historia-livre {
+    scroll-snap-align: start;
+  }
 }
 .historia-palco {
   position: sticky;
@@ -342,33 +424,39 @@ a {
   height: 100svh;
   overflow: hidden;
 }
+/*
+ * Textos em parallax com a rolagem: cada estado (centro --c) entra por baixo e sai por cima,
+ * passando pelo lugar exato quando a rolagem para nele.
+ */
 .camada {
   position: absolute;
   inset: 0 0 auto 0;
+  transform: translateY(calc(clamp(-48px, (var(--c) - var(--p)) * 260px, 48px) * var(--m)));
 }
 .camada-0 {
+  --c: 0;
   opacity: var(--s0);
-  transform: translateY(calc((1 - var(--s0)) * -24px));
 }
 .camada-1 {
+  --c: 0.25;
   opacity: var(--s1);
-  transform: translateY(calc((1 - var(--s1)) * 24px));
 }
 .camada-2 {
+  --c: 0.5;
   opacity: var(--s2);
-  transform: translateY(calc((1 - var(--s2)) * 24px));
 }
 .camada-3 {
+  --c: 0.75;
   opacity: var(--s3);
-  transform: translateY(calc((1 - var(--s3)) * 24px));
 }
 .camada-4 {
+  --c: 1;
   opacity: var(--s4);
-  transform: translateY(calc((1 - var(--s4)) * 24px));
   visibility: hidden;
 }
+/* Pela posição (--p), e não pela soma dos estados: entre um estado e outro ambos ficam em 0. */
 .cadeia {
-  opacity: calc(var(--s1) + var(--s2) + var(--s3));
+  opacity: clamp(0, min((var(--p) - 0.12) / 0.06, (0.87 - var(--p)) / 0.05), 1);
 }
 .cadeia-1 {
   opacity: calc(0.45 + var(--s1) * 0.55);
@@ -388,39 +476,48 @@ a {
 .cadeia-3 > i {
   transform: scaleX(calc(0.15 + var(--s3) * 0.85));
 }
-.dica-rolar {
-  opacity: var(--s0);
+/* Aviso "role para continuar": visível em todos os estados; só a seta se mexe. */
+@media (max-width: 819px) {
+  /* No celular fica acima da cadeia; no herói, quando ela ainda não aparece, desce para o lugar dela. */
+  .dica-rolar {
+    transform: translateY(calc(var(--s0) * 66px));
+  }
 }
-.dica-rolar > span {
+.dica-rolar-seta {
   animation: vat-hint 1.8s ease-in-out infinite;
 }
 
-/* Progresso por CSS scroll-driven animations (Chrome, Edge, Safari 26+). */
+/*
+ * Progresso por CSS scroll-driven animations (Chrome, Edge, Safari 26+).
+ * Cada troca de estado ocupa 10% da rolagem: o texto que sai some na primeira metade e
+ * o que entra aparece na segunda, sem os dois parágrafos sobrepostos.
+ * Os mesmos números estão em rolagem-alternativa.tsx.
+ */
 @keyframes h-p {
   from { --p: 0; }
   to { --p: 1; }
 }
 @keyframes h-s0 {
   0%, 7% { --s0: 1; }
-  17%, 100% { --s0: 0; }
+  12%, 100% { --s0: 0; }
 }
 @keyframes h-s1 {
-  0%, 8% { --s1: 0; }
+  0%, 13% { --s1: 0; }
   18%, 32% { --s1: 1; }
-  42%, 100% { --s1: 0; }
+  37%, 100% { --s1: 0; }
 }
 @keyframes h-s2 {
-  0%, 33% { --s2: 0; }
+  0%, 38% { --s2: 0; }
   43%, 57% { --s2: 1; }
-  67%, 100% { --s2: 0; }
+  62%, 100% { --s2: 0; }
 }
 @keyframes h-s3 {
-  0%, 58% { --s3: 0; }
+  0%, 63% { --s3: 0; }
   68%, 82% { --s3: 1; }
-  92%, 100% { --s3: 0; }
+  87%, 100% { --s3: 0; }
 }
 @keyframes h-s4 {
-  0%, 83% { --s4: 0; }
+  0%, 88% { --s4: 0; }
   93%, 100% { --s4: 1; }
 }
 @keyframes h-dawn {
@@ -428,12 +525,12 @@ a {
   94%, 100% { --dawn: 1; }
 }
 @keyframes vis-0 {
-  0%, 16% { visibility: visible; }
-  16.01%, 100% { visibility: hidden; }
+  0%, 12% { visibility: visible; }
+  12.01%, 100% { visibility: hidden; }
 }
 @keyframes vis-4 {
-  0%, 84% { visibility: hidden; }
-  84.01%, 100% { visibility: visible; }
+  0%, 88% { visibility: hidden; }
+  88.01%, 100% { visibility: visible; }
 }
 @keyframes rede-q {
   from { --q: 0; }
@@ -459,6 +556,8 @@ a {
 @supports (animation-timeline: view()) {
   .historia {
     view-timeline-name: --historia;
+    /* Sem o recuo do scroll-padding: p = rolagem / (altura - tela), como no fallback e nas pausas. */
+    view-timeline-inset: 0;
     animation-name: h-p, h-s0, h-s1, h-s2, h-s3, h-s4, h-dawn;
     animation-timing-function: linear;
     animation-fill-mode: both;
@@ -538,8 +637,9 @@ a {
     animation: none !important;
     --q: 1;
   }
-  .vat-pulso,
-  .dica-rolar > span {
+  /* Sem flash nos cabos: o dashoffset de repouso deixa o traço fora do cabo. */
+  .vat-flash,
+  .dica-rolar-seta {
     animation: none !important;
   }
 }
@@ -597,6 +697,16 @@ a {
 .dialogo-popup[data-ending-style] {
   opacity: 0;
   transform: scale(0.96);
+}
+/*
+ * Menu do celular: vidro escuro sobre a página (blur até 20px; mais que isso pesa no Safari).
+ * Só a forma padrão: o Lightning CSS gera o -webkit- e, com as duas escritas, fica só com a última.
+ */
+.menu-popup {
+  background:
+    radial-gradient(80% 50% at 100% 0%, rgb(139 92 246 / 0.25), transparent 70%),
+    rgb(15 19 80 / 0.8);
+  backdrop-filter: blur(18px) saturate(140%);
 }
 .folha-popup {
   transition: transform 260ms var(--ease-drawer);

@@ -16,7 +16,7 @@ export function Vizinhanca({ contagem }: { contagem: ContagemBairro[] }) {
           id="rede-viva"
           role="img"
           aria-label={t.redeAria}
-          className="rede-viva flex-[2_1_460px] rounded-[28px] border border-[rgba(154,163,240,.16)] bg-[radial-gradient(70%_70%_at_50%_50%,rgba(90,200,250,.08),transparent_70%),#10145A] p-[clamp(12px,2vw,28px)]"
+          className="rede-viva flex-[2_1_460px] rounded-[28px] border border-[rgba(154,163,240,.16)] bg-[#10145A] bg-[radial-gradient(70%_70%_at_50%_50%,rgba(90,200,250,.08),transparent_70%)] p-[clamp(12px,2vw,28px)]"
           dangerouslySetInnerHTML={{ __html: gerarRede(820, 420, 26, "rede") }}
         />
         <div className="cartao-borda flex flex-[1_1_300px] flex-col gap-4 rounded-[28px] p-[22px]">

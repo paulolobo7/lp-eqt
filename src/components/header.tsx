@@ -13,11 +13,11 @@ export function Header() {
   const [menu, setMenu] = useState(false);
   return (
     <header className="nav-topo fixed inset-x-0 top-0 z-50 isolate pt-[env(safe-area-inset-top,0px)]">
-      <nav aria-label="Principal" className="mx-auto flex min-h-[68px] max-w-[1320px] items-center gap-7 px-[clamp(16px,4vw,40px)] py-2.5">
-        <a href="#topo" className="mr-auto flex min-h-12 items-center gap-3 text-texto no-underline">
+      <nav aria-label="Principal" className="mx-auto flex min-h-[68px] max-w-[1320px] items-center gap-7 px-[clamp(16px,4vw,40px)] py-2.5 max-[389px]:gap-3">
+        <a href="#topo" className="mr-auto flex min-h-12 items-center gap-3 text-texto no-underline max-[389px]:gap-2">
           <span aria-hidden="true" className="hidden sm:inline-flex"><LogoPh rotulo={marca.logoRotulo} /></span>
           <span aria-hidden="true" className="inline-flex sm:hidden"><LogoPh curto rotulo={marca.logoRotulo} /></span>
-          <span className="titulo flex items-center gap-2 text-[17px] text-texto">
+          <span className="titulo flex items-center gap-2 text-[17px] text-texto max-[389px]:text-[15px]">
             <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" />
             {marca.nome}
             <span className="sr-only">, início</span>
@@ -37,19 +37,22 @@ export function Header() {
           </Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Popup
-              className="dialogo-popup fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-[radial-gradient(80%_50%_at_100%_0%,rgba(139,92,246,.25),transparent_70%),#0F1350] px-4 pt-[calc(12px+env(safe-area-inset-top,0px))] pb-[calc(16px+env(safe-area-inset-bottom,0px))] outline-none"
+              className="dialogo-popup menu-popup fixed inset-0 z-[80] flex flex-col overflow-y-auto px-[clamp(16px,4vw,40px)] pt-[calc(10px+env(safe-area-inset-top,0px))] pb-[calc(16px+env(safe-area-inset-bottom,0px))] outline-none"
               aria-label="Menu"
             >
-              <div className="flex min-h-14 items-center justify-between">
-                <Dialog.Title className="titulo m-0 flex items-center gap-2 text-lg text-ciano">
+              {/* Mesma linha do cabeçalho: ao abrir, só o ícone do botão troca. */}
+              <div className="flex min-h-12 items-center gap-3 max-[389px]:gap-2">
+                <span aria-hidden="true" className="hidden sm:inline-flex"><LogoPh rotulo={marca.logoRotulo} /></span>
+                <span aria-hidden="true" className="inline-flex sm:hidden"><LogoPh curto rotulo={marca.logoRotulo} /></span>
+                <Dialog.Title className="titulo m-0 mr-auto flex items-center gap-2 text-[17px] text-texto max-[389px]:text-[15px]">
                   <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" />
-                  <span className="text-texto">{marca.nome}</span>
+                  {marca.nome}
                 </Dialog.Title>
                 <Dialog.Close className="btn !h-12 !w-12 !rounded-[14px] !p-0" aria-label={nav.fecharMenu}>
                   <Icon nome="x" />
                 </Dialog.Close>
               </div>
-              <nav aria-label="Menu" className="mt-6 flex flex-col">
+              <nav aria-label="Menu" className="mt-8 flex flex-col">
                 {nav.menuLinks.map((l) => (
                   <a
                     key={l.href + l.rotulo}

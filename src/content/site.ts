@@ -50,7 +50,7 @@ export const hero = {
   texto:
     "Converse com o bot da Equatorial no WhatsApp, aprenda os cuidados em imagem e áudio e ganhe o selo Vizinho de Alta Tensão.",
   secundario: "Ver como funciona",
-  rolar: "Role para ver a história",
+  rolar: "Role para continuar",
   rotuloSecao: "Abertura: da noite ao amanhecer",
 };
 

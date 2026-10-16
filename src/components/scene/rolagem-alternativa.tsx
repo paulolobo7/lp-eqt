@@ -4,7 +4,8 @@ import { scroll } from "motion";
 import { useEffect } from "react";
 
 const cl = (x: number) => Math.min(1, Math.max(0, x));
-const estado = (p: number, c: number) => cl(1 - (Math.abs(p - c) - 0.07) / 0.1);
+// Pleno até 7% do centro e some em 5%: o mesmo ritmo dos @keyframes h-s* do globals.css.
+const estado = (p: number, c: number) => cl(1 - (Math.abs(p - c) - 0.07) / 0.05);
 
 /**
  * Alternativa às CSS scroll-driven animations (Firefox, Safari < 26): usa o

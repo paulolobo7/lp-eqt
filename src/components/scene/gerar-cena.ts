@@ -2,6 +2,7 @@
  * Cena "A rede que protege a vizinhança" — porta de design/fonte/cena-e-icones.js.
  * Gera SVG no servidor (zero JS no cliente), dirigido por variáveis CSS:
  *   --p     progresso da rolagem (0..1)        --m   multiplicador do parallax (0 = sem movimento)
+ *   --cam   câmera do parallax (0..1; ver .historia no globals.css)
  *   --s1..3 exposição, risco de dano, emergência   --dawn amanhecer
  * Só opacity e transform mudam com a rolagem.
  */
@@ -10,7 +11,8 @@ type Opcoes = { seed?: number; still?: boolean; prefixo: string };
 type Pt = { x: number; y: number };
 
 const v = (n: string, d: number | string) => `var(--${n},${d})`;
-const P = (k: number) => `transform:translate3d(0,calc(${v("p", 0)} * ${v("m", 1)} * ${k}px),0)`;
+// Parallax por profundidade: k acompanha a história toda (--p); c segue a câmera (--cam).
+const P = (k: number, c = 0) => `transform:translate3d(0,calc((${v("p", 0)} * ${k} + ${v("cam", 0)} * ${c}) * ${v("m", 1)} * 1px),0)`;
 const f1 = (n: number) => Number(n.toFixed(1));
 
 export function gerarCena(W: number, opt: Opcoes): string {
@@ -46,7 +48,7 @@ export function gerarCena(W: number, opt: Opcoes): string {
     const cx = r() * W, cy = r() * H * 0.6, rr = 0.5 + r() * 1.2;
     sb[Math.floor(r() * 3)] += `M${(cx - rr).toFixed(1)} ${cy.toFixed(1)}a${rr.toFixed(2)} ${rr.toFixed(2)} 0 1 0 ${(2 * rr).toFixed(2)} 0a${rr.toFixed(2)} ${rr.toFixed(2)} 0 1 0 ${(-2 * rr).toFixed(2)} 0`;
   }
-  s += `<g style="opacity:calc(1 - ${v("dawn", 0)});${P(-40)}">${sb.map((d, j) => `<path d="${d}" fill="#F5F7FF" opacity="${0.3 + j * 0.25}"/>`).join("")}</g>`;
+  s += `<g style="opacity:calc(1 - ${v("dawn", 0)});${P(-40, -60)}">${sb.map((d, j) => `<path d="${d}" fill="#F5F7FF" opacity="${0.3 + j * 0.25}"/>`).join("")}</g>`;
 
   // camada 1: colinas e torres distantes
   let far = `<path d="M0 690 C${f1(W * 0.18)} 640 ${f1(W * 0.36)} 700 ${f1(W * 0.55)} 660 S${f1(W * 0.85)} 650 ${W} 630 V${H} H0Z" fill="#191E6C"/>`;
@@ -55,7 +57,7 @@ export function gerarCena(W: number, opt: Opcoes): string {
     far += `<path d="M${x - 16} ${b} L${x} ${b - h} L${x + 16} ${b} M${x - 26} ${b - h + 22} H${x + 26} M${x - 9} ${b - 50} L${x + 9} ${b - 20}" stroke="#3B43A6" stroke-width="1.4" fill="none"/>`;
   });
   far += `<path d="M${f1(W * 0.1 - 26)} 578 Q${f1(W * 0.2)} 620 ${f1(W * 0.3 - 26)} 590" stroke="#5AC8FA" stroke-opacity=".3" fill="none"/>`;
-  s += `<g style="${P(-14)}">${far}</g>`;
+  s += `<g style="${P(-14, -32)}">${far}</g>`;
   s += `<rect y="560" width="${W}" height="340" fill="${url("fog")}"/>`;
 
   // camada 2: torre principal + cabos
@@ -86,14 +88,20 @@ export function gerarCena(W: number, opt: Opcoes): string {
     [at.R2, { x: (at.R2.x + W) / 2, y: y2 + 160 }, { x: W + 30, y: y2 + 80 }],
   ];
   const pd = (c: [Pt, Pt, Pt]) => `M${f1(c[0].x)} ${f1(c[0].y)} Q${f1(c[1].x)} ${f1(c[1].y)} ${f1(c[2].x)} ${f1(c[2].y)}`;
-  let cables = "";
+  let cables = "", flashes = "";
   cab.forEach((c, i) => {
     const d = pd(c);
     cables += `<path d="${d}" stroke="#5AC8FA" stroke-width="12" opacity=".07" fill="none"/>`;
-    // Cabos que pulsam: só opacity, em ritmo lento e defasado.
-    cables += `<path d="${d}" stroke="#5AC8FA" stroke-width="5" fill="none" class="${opt.still ? "" : "vat-pulso"}" style="opacity:.18;animation-delay:${(-i * 1.1).toFixed(1)}s"/>`;
+    cables += `<path d="${d}" stroke="#5AC8FA" stroke-width="5" opacity=".18" fill="none"/>`;
     cables += `<path d="${d}" stroke="${url("cable")}" stroke-width="1.8" fill="none"/>`;
+    // Flash de luz correndo pelo cabo, em ritmo defasado: dois halos (borda suave) e o núcleo. Ver .vat-flash no CSS.
+    const ritmo = `animation-duration:${(5 + i * 0.7).toFixed(1)}s;animation-delay:${(-i * 1.3).toFixed(1)}s`;
+    [[14, "#5AC8FA", ".14"], [7, "#A9E2FC", ".35"], [2.6, "#F5FBFF", "1"]].forEach(([lw, cor, op]) => {
+      flashes += `<path d="${d}" pathLength="1000" class="vat-flash" stroke="${cor}" stroke-width="${lw}" stroke-linecap="round" opacity="${op}" fill="none" style="${ritmo}"/>`;
+    });
   });
+  // Na emergência o bairro fica sem luz: o flash apaga junto.
+  if (!opt.still) cables += `<g style="opacity:calc(1 - ${v("s3", 0)})">${flashes}</g>`;
 
   // exposição: pipa presa no cabo + cerca com placa
   const kp = q(cab[0][0], cab[0][1], cab[0][2], 0.62);
@@ -119,7 +127,7 @@ export function gerarCena(W: number, opt: Opcoes): string {
   const rompido = `M${f1(at.R2.x)} ${f1(at.R2.y)} Q${f1(at.R2.x + 70 * k)} ${f1(at.R2.y + 120)} ${f1(at.R2.x + 40 * k)} ${base - 10}`;
   let s3 = `<path d="${rompido}" stroke="#FFB020" stroke-width="2" fill="none"/><path d="${rompido}" stroke="#FFB020" stroke-width="8" opacity=".18" fill="none"/>`;
   s3 += `<ellipse cx="${f1(tx)}" cy="${base + 4}" rx="${f1(250 * k)}" ry="34" fill="none" stroke="#FFB020" stroke-width="2" stroke-dasharray="10 12" opacity=".9"/>`;
-  s += `<g style="${P(-6)}">${tower}<g style="opacity:calc(1 - ${v("s3", 0)} * .75)">${cables}</g><g style="opacity:${v("s1", 0)}">${s1}</g><g style="opacity:${v("s2", 0)}">${s2}</g><g style="opacity:${v("s3", 0)}">${s3}</g></g>`;
+  s += `<g style="${P(-6, -10)}">${tower}<g style="opacity:calc(1 - ${v("s3", 0)} * .75)">${cables}</g><g style="opacity:${v("s1", 0)}">${s1}</g><g style="opacity:${v("s2", 0)}">${s2}</g><g style="opacity:${v("s3", 0)}">${s3}</g></g>`;
 
   // camada 3: casas (janelas acendem com --dawn; algumas apagam na emergência)
   function fileira(b: number, minW: number, maxW: number, minH: number, maxH: number, fill: string, edge: string, win: number, frente: boolean) {
@@ -158,8 +166,8 @@ export function gerarCena(W: number, opt: Opcoes): string {
     }
     return out;
   }
-  s += `<g style="${P(10)}">${fileira(860, 56, 120, 60, 150, "#171C66", "#232A85", 7, false)}</g>`;
-  s += `<g style="${P(26)}">${fileira(912, 90, 170, 100, 210, "#0D1150", "#2A318F", 11, true)}</g>`;
+  s += `<g style="${P(10, 4)}">${fileira(860, 56, 120, 60, 150, "#171C66", "#232A85", 7, false)}</g>`;
+  s += `<g style="${P(26, 10)}">${fileira(912, 90, 170, 100, 210, "#0D1150", "#2A318F", 11, true)}</g>`;
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" width="100%" height="100%" aria-hidden="true" focusable="false" style="display:block">${s}</svg>`;
 }
 
