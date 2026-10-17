@@ -45,7 +45,9 @@ export const cta = {
 };
 
 export const hero = {
-  kicker: "Equatorial Energia · Programa no WhatsApp",
+  // No celular estreito só a segunda parte aparece, para o kicker caber em uma linha.
+  kickerMarca: "Equatorial Energia",
+  kicker: "Programa no WhatsApp",
   titulo: "Quem mora perto da alta tensão merece saber como se proteger.",
   texto:
     "Converse com o bot da Equatorial no WhatsApp, aprenda os cuidados em imagem e áudio e ganhe o selo Vizinho de Alta Tensão.",

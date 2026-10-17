@@ -122,6 +122,12 @@ button,
   text-transform: uppercase;
   color: var(--color-ciano);
 }
+@media (max-width: 819px) {
+  .kicker {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+}
 .kicker-traco {
   width: 28px;
   height: 2px;
@@ -311,6 +317,11 @@ button,
   stroke-dashoffset: 80;
   animation: vat-flash 5s linear infinite;
 }
+/* stroke-dashoffset roda na thread principal mesmo fora da tela: com a história fora dela, pausa. */
+html[data-historia="perto"] :is(.vat-flash, .dica-rolar-seta),
+html[data-historia="longe"] :is(.vat-flash, .dica-rolar-seta) {
+  animation-play-state: paused;
+}
 
 /* ---------- História em rolagem (Hero + Problema) ---------- */
 @property --p {
@@ -378,9 +389,10 @@ button,
 /*
  * Pausas da história: a rolagem para em cada estado (centro de cada patamar, p = k/4), e um
  * gesto avança um estado só (snap-stop). Depois da história, .historia-livre é uma área de
- * snap maior que a tela: dentro dela a rolagem é livre. O snap só fica ligado enquanto a
- * .historia-faixa (do topo até uma tela depois da história; ver pausas-historia.tsx) aparece,
- * e dali para baixo a rolagem é 100% nativa (o iOS tem falhas de inércia em áreas de snap altas).
+ * snap maior que a tela: dentro dela a rolagem é livre. O snap só fica ligado com
+ * html[data-historia] "visivel" ou "perto" (do topo até uma tela depois da história; ver
+ * pausas-historia.tsx), e dali para baixo a rolagem é 100% nativa (o iOS tem falhas de
+ * inércia em áreas de snap altas).
  * O top soma --rolagem-topo porque o snap alinha ao scroll-padding-top.
  */
 .historia-pausa {
@@ -407,7 +419,8 @@ button,
   height: calc(var(--historia-altura) + 100svh);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html.pausas-historia {
+  html[data-historia="visivel"],
+  html[data-historia="perto"] {
     scroll-snap-type: y mandatory;
   }
   .historia-pausa {
@@ -478,9 +491,9 @@ button,
 }
 /* Aviso "role para continuar": visível em todos os estados; só a seta se mexe. */
 @media (max-width: 819px) {
-  /* No celular fica acima da cadeia; no herói, quando ela ainda não aparece, desce para o lugar dela. */
+  /* No celular fica acima da cadeia; no herói e no amanhecer, quando ela não aparece, desce para o lugar dela. */
   .dica-rolar {
-    transform: translateY(calc(var(--s0) * 66px));
+    transform: translateY(calc(max(var(--s0), var(--s4)) * 66px));
   }
 }
 .dica-rolar-seta {

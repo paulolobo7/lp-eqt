@@ -18,7 +18,7 @@ export function Header() {
           <span aria-hidden="true" className="hidden sm:inline-flex"><LogoPh rotulo={marca.logoRotulo} /></span>
           <span aria-hidden="true" className="inline-flex sm:hidden"><LogoPh curto rotulo={marca.logoRotulo} /></span>
           <span className="titulo flex items-center gap-2 text-[17px] text-texto max-[389px]:text-[15px]">
-            <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" />
+            <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" className="max-[339px]:!hidden" />
             {marca.nome}
             <span className="sr-only">, início</span>
           </span>
@@ -45,7 +45,7 @@ export function Header() {
                 <span aria-hidden="true" className="hidden sm:inline-flex"><LogoPh rotulo={marca.logoRotulo} /></span>
                 <span aria-hidden="true" className="inline-flex sm:hidden"><LogoPh curto rotulo={marca.logoRotulo} /></span>
                 <Dialog.Title className="titulo m-0 mr-auto flex items-center gap-2 text-[17px] text-texto max-[389px]:text-[15px]">
-                  <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" />
+                  <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" className="max-[339px]:!hidden" />
                   {marca.nome}
                 </Dialog.Title>
                 <Dialog.Close className="btn !h-12 !w-12 !rounded-[14px] !p-0" aria-label={nav.fecharMenu}>

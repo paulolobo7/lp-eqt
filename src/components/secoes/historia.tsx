@@ -4,9 +4,16 @@ import { Icon } from "../icon";
 import { Cena } from "../scene/cena";
 import { PausasHistoria } from "../scene/pausas-historia";
 
-const kickerAlerta = "flex items-center gap-2.5 font-semibold text-[13px] leading-[1.3] tracking-[.14em] uppercase text-alerta mb-5";
-const h2Historia = "titulo m-0 mb-5 text-[clamp(36px,5vw,72px)] leading-[1.03]";
-const pHistoria = "m-0 max-w-[520px] text-[clamp(17px,1.5vw,20px)] leading-normal text-texto-3";
+// Tipografia da história: abaixo de 820px a escala acompanha também a altura da tela (svh),
+// para o texto caber em celulares baixos sem cobrir o aviso e a cadeia; acima, o tamanho do design.
+const kickerAlerta =
+  "flex items-center gap-2.5 font-semibold text-xs leading-[1.3] tracking-[.12em] uppercase text-alerta mb-3 min-[820px]:mb-5 min-[820px]:text-[13px] min-[820px]:tracking-[.14em]";
+const h2Historia =
+  "titulo m-0 mb-3.5 text-[clamp(28px,min(8.8vw,5svh),40px)] leading-[1.04] min-[820px]:mb-5 min-[820px]:text-[clamp(36px,min(5vw,8svh),72px)] min-[820px]:leading-[1.03]";
+const pTamanho = "text-[clamp(15px,min(4.2vw,2.4svh),17px)] min-[820px]:text-[clamp(17px,1.5vw,20px)]";
+const pHistoria = `m-0 max-w-[520px] leading-normal text-texto-3 ${pTamanho}`;
+// CTA principal: largura total (até 440px, para não esticar no celular deitado) e um pouco mais baixo no celular.
+const ctaCelular = "btn btn-cta max-[819px]:w-full max-[819px]:max-w-[440px] max-[819px]:!min-h-[52px] max-[819px]:!text-base";
 
 /** D1/D2 + M1/M2: Hero e Problema numa só cena, da noite ao amanhecer. */
 export function Historia() {
@@ -25,19 +32,30 @@ export function Historia() {
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_80%_at_0%_18%,rgba(8,10,48,.82)_0%,rgba(8,10,48,.4)_45%,rgba(8,10,48,0)_72%)]"
           />
-          <div className="absolute inset-0 mx-auto max-w-[1320px] px-[clamp(20px,5vw,64px)] pt-[clamp(104px,17vh,190px)] [@media(max-height:700px)]:pt-[88px]">
+          <div className="absolute inset-0 mx-auto max-w-[1320px] px-[clamp(20px,5vw,64px)] pt-[clamp(84px,13svh,120px)] min-[820px]:pt-[clamp(84px,17svh,190px)]">
             <div className="relative max-w-[760px]">
               <div className="camada camada-0">
-                <div className="kicker mb-5">
+                <div className="kicker mb-3 min-[820px]:mb-5">
                   <span className="kicker-traco" aria-hidden="true" />
-                  {hero.kicker}
+                  <span>
+                    <span className="max-[479px]:hidden">{hero.kickerMarca} · </span>
+                    {hero.kicker}
+                  </span>
                 </div>
-                <h1 className="titulo m-0 mb-[22px] text-[clamp(38px,5.6vw,82px)] leading-[1.02] text-texto">{hero.titulo}</h1>
-                <p className="m-0 mb-8 max-w-[540px] text-[clamp(17px,1.5vw,20px)] leading-normal text-texto-3 text-pretty">{hero.texto}</p>
-                <div className="flex flex-wrap gap-3">
-                  <CtaWhatsApp testId="cta-hero" />
-                  <a href="#como" className="btn !min-h-14">
+                <h1 className="titulo m-0 mb-3.5 text-[clamp(28px,min(9.4vw,5.4svh),44px)] leading-[1.04] text-texto min-[820px]:mb-[22px] min-[820px]:text-[clamp(32px,min(5.6vw,8.6svh),82px)] min-[820px]:leading-[1.02]">
+                  {hero.titulo}
+                </h1>
+                {/* Em telas muito baixas (celular deitado) o parágrafo sai: ficam título e CTA. */}
+                <p className={`m-0 mb-5 max-w-[540px] leading-normal text-texto-3 text-pretty min-[820px]:mb-8 ${pTamanho} [@media(max-height:460px)]:hidden`}>{hero.texto}</p>
+                {/* No celular: um CTA principal de largura total e o secundário como link discreto. */}
+                <div className="flex max-w-[440px] flex-col gap-1 min-[820px]:max-w-none min-[820px]:flex-row min-[820px]:flex-wrap min-[820px]:gap-3">
+                  <CtaWhatsApp testId="cta-hero" className={ctaCelular} />
+                  <a
+                    href="#como"
+                    className="btn !min-h-14 max-[819px]:!min-h-11 max-[819px]:!border-transparent max-[819px]:!text-[15px] max-[819px]:!text-texto-2"
+                  >
                     {hero.secundario}
+                    <Icon nome="arrow" tamanho={18} className="min-[820px]:!hidden" />
                   </a>
                 </div>
               </div>
@@ -52,15 +70,15 @@ export function Historia() {
                 </div>
               ))}
               <div className="camada camada-4">
-                <div className="kicker mb-5 !text-ciano-gelo">
+                <div className="kicker mb-3 !text-ciano-gelo min-[820px]:mb-5">
                   <Icon nome="sun" />
                   {problema.amanhecer.kicker}
                 </div>
                 <h2 className={`${h2Historia} [text-shadow:0_2px_30px_rgba(8,10,48,.6)]`}>{problema.amanhecer.titulo}</h2>
-                <p className="m-0 mb-[30px] max-w-[520px] text-[clamp(17px,1.5vw,20px)] text-texto [text-shadow:0_1px_16px_rgba(8,10,48,.8)]">
+                <p className={`m-0 mb-5 max-w-[520px] text-texto [text-shadow:0_1px_16px_rgba(8,10,48,.8)] min-[820px]:mb-[30px] ${pTamanho} [@media(max-height:460px)]:hidden`}>
                   {problema.amanhecer.texto}
                 </p>
-                <CtaWhatsApp fundo="#1B2070" />
+                <CtaWhatsApp fundo="#1B2070" className={ctaCelular} />
               </div>
             </div>
           </div>
