@@ -98,14 +98,20 @@ export function AppProvider({
                   <Icon nome="chat" />
                   Testar o EquaBot na Página (Simulador)
                 </button>
-                <a
-                  href={linkWhatsApp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-contorno w-full justify-center text-center text-sm"
-                >
-                  {cta.qrAbrirAqui}
-                </a>
+                {linkWhatsApp !== "#como" ? (
+                  <a
+                    href={linkWhatsApp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-contorno w-full justify-center text-center text-sm"
+                  >
+                    {cta.qrAbrirAqui}
+                  </a>
+                ) : (
+                  <p className="m-0 text-center text-xs text-texto-4 px-2">
+                    💡 Para testar no WhatsApp real, defina o número no arquivo <span className="text-brand-celeste font-mono">.env.local</span>.
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-texto-4">
                 {cta.qrRodape} {numeroRotulo}

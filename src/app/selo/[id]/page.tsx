@@ -39,7 +39,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 async function Conteudo({ params }: Props) {
   const { id } = await params;
   const selo = await getServices().badge.ler(id);
-  const link = linkWhatsApp((process.env.WHATSAPP_NUMERO || "5598984860486").replace(/\D/g, ""), cta.mensagemPronta);
+  const numeroSelo = process.env.WHATSAPP_NUMERO?.replace(/\D/g, "");
+  const link = linkWhatsApp(numeroSelo, cta.mensagemPronta);
   if (!selo) {
     return (
       <div className="flex flex-col items-center gap-6 text-center">
