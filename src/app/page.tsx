@@ -23,13 +23,16 @@ export default async function Home() {
     svc.community.contagemPorBairro(),
     seloDeExemplo(),
   ]);
-  const numero = (process.env.WHATSAPP_NUMERO || "559820550116").replace(/\D/g, "");
+  const numero = (process.env.WHATSAPP_NUMERO || "5598984860486").replace(/\D/g, "");
   const link = linkWhatsApp(numero, cta.mensagemPronta);
   const qrSvg = await QRCode.toString(link, { type: "svg", margin: 0, color: { dark: "#14185F", light: "#F5F7FF" }, errorCorrectionLevel: "M" });
 
   const rotuloFormatado = numeroWhatsAppValido(numero) ? (
-    <span className="font-mono font-medium text-brand-celeste">
-      +{numero.slice(0, 2)} ({numero.slice(2, 4)}) {numero.slice(4, 8)}-{numero.slice(8)}
+    <span className="inline-flex items-center gap-1.5 font-mono font-medium text-brand-celeste">
+      +{numero.slice(0, 2)} ({numero.slice(2, 4)}) {numero.length === 13 ? `${numero.slice(4, 9)}-${numero.slice(9)}` : `${numero.slice(4, 8)}-${numero.slice(8)}`}
+      <span className="text-[11px] font-sans bg-[rgba(90,200,250,.15)] text-brand-celeste px-2 py-0.5 rounded-full border border-[rgba(90,200,250,.25)]">
+        EquaBot · Projeto #486
+      </span>
     </span>
   ) : (
     <Ph>{PH.numero}</Ph>

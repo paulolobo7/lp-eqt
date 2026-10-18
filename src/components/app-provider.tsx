@@ -46,10 +46,18 @@ export function AppProvider({
   const [selo, setSelo] = useState<SeloObtido | null>(null);
 
   const aoClicarCta = useCallback((e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) return;
     const desktop = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 820px)").matches;
-    if (!desktop || e.metaKey || e.ctrlKey || e.shiftKey) return;
-    e.preventDefault();
-    setQrAberto(true);
+    if (desktop) {
+      e.preventDefault();
+      setQrAberto(true);
+      return;
+    }
+    const el = document.getElementById("como");
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: "smooth" });
+    }
   }, []);
 
   const valor = useMemo(() => ({ linkWhatsApp, aoClicarCta, selo, setSelo }), [linkWhatsApp, aoClicarCta, selo]);
@@ -75,23 +83,30 @@ export function AppProvider({
                 aria-label={cta.qrRotulo}
                 dangerouslySetInnerHTML={{ __html: qrSvg }}
               />
-              <a href={linkWhatsApp} target="_blank" rel="noopener noreferrer" className="btn btn-contorno self-center">
-                <Icon nome="chat" />
-                {cta.qrAbrirAqui}
-              </a>
-              <button
-                type="button"
-                onClick={() => {
-                  setQrAberto(false);
-                  const el = document.getElementById("experimente");
-                  if (el) {
-                    el.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
-                className="text-xs text-brand-celeste underline underline-offset-4 hover:text-texto cursor-pointer text-center"
-              >
-                ⚡ Ou teste o bot agora no simulador desta página
-              </button>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQrAberto(false);
+                    const el = document.getElementById("como");
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className="btn btn-cta w-full justify-center text-center cursor-pointer"
+                >
+                  <Icon nome="chat" />
+                  Testar o EquaBot na Página (Simulador)
+                </button>
+                <a
+                  href={linkWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-contorno w-full justify-center text-center text-sm"
+                >
+                  {cta.qrAbrirAqui}
+                </a>
+              </div>
               <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-texto-4">
                 {cta.qrRodape} {numeroRotulo}
               </div>
