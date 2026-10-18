@@ -217,7 +217,18 @@ export async function processarMensagemBot(req: SolicitacaoMensagem): Promise<Re
     return { mensagens: canais };
   }
 
-  // 6. Resposta Geral Educativa
+  // 6. Consulta opcional via OpenAI (se OPENAI_API_KEY estiver configurada)
+  const respostaIA = await consultarOpenAI(texto, sessao.historico);
+  if (respostaIA && respostaIA.length > 0) {
+    sessao.historico.push(...respostaIA.map((m) => ({ de: "bot" as const, texto: m })));
+    return {
+      mensagens: respostaIA,
+      bairroReconhecido: sessao.bairro,
+      nivelRisco: sessao.nivelRisco,
+    };
+  }
+
+  // 7. Resposta Geral Educativa (fallback determinístico)
   const padrao = [
     `Entendido, vizinho! Para garantir a sua segurança e a da sua família em São Luís perto de linhas e subestações da Equatorial:`,
     `1. *Cabos caídos*: Nunca toque e fique a mais de 10 metros de distância.\n2. *Pipas*: Jamais solte perto de fios e nunca tente resgatar pipa presa.\n3. *Eletrodomésticos*: Tire da tomada durante raios e peça ressarcimento em até 90 dias no 116 ou WhatsApp (98) 2055-0116 caso queimem por oscilação na rede.\n4. *Emergência*: Ligue imediatamente para o *116*.`,
@@ -225,6 +236,67 @@ export async function processarMensagemBot(req: SolicitacaoMensagem): Promise<Re
   ];
   sessao.historico.push(...padrao.map((m) => ({ de: "bot" as const, texto: m })));
   return { mensagens: padrao };
+}
+
+/** Consulta OpenAI caso OPENAI_API_KEY esteja disponível no ambiente */
+async function consultarOpenAI(
+  texto: string,
+  historico: Array<{ de: "usuario" | "bot"; texto: string }>
+): Promise<string[] | null> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const systemPrompt = `Você é o EquaBot, assistente virtual oficial e educador comunitário do programa 'Vizinho de Alta Tensão' da Equatorial Energia Maranhão em São Luís (Desafio #486 do Hackathon Equatorial).
+Sua missão é educar a comunidade e empoderar os moradores que residem perto de linhas de transmissão e subestações.
+Diretrizes de segurança:
+- CABOS CAÍDOS: NUNCA toque, fique a mais de 10-15 metros, tensão de passo (pés juntos), ligue 116 e 193.
+- RESSARCIMENTO DE APARELHOS: Prazo até 90 dias (Res. ANEEL 1.000/2021). NUNCA consertar nem jogar fora antes da vistoria da Equatorial! Ter Conta Contrato em mãos. Pedir pelo WhatsApp Clara ((98) 2055-0116), site ou 116.
+- PIPAS: Proibido soltar perto da rede; nunca tentar tirar pipa presa em fios.
+- OBRAS/LAJES: Cuidado com vergalhões de ferro (arco elétrico flashover); respeitar faixa de servidão.
+- INVASÃO DE SUBESTAÇÃO: Proibido pular muros.
+- CANAIS: Central 24h: 116. WhatsApp Clara: (98) 2055-0116. Bombeiros: 193.
+Responda de forma acolhedora, humana e direta no estilo do WhatsApp (máximo 3 parágrafos curtos, emojis pontuais ⚡🔌🛡️).`;
+
+    const mensagens = [
+      { role: "system", content: systemPrompt },
+      ...historico.slice(-4).map((h) => ({
+        role: h.de === "usuario" ? ("user" as const) : ("assistant" as const),
+        content: h.texto,
+      })),
+      { role: "user" as const, content: texto },
+    ];
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages,
+        temperature: 0.6,
+        max_tokens: 400,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      const resposta = data.choices?.[0]?.message?.content?.trim();
+      if (resposta) {
+        return formatarMensagensWhatsApp(resposta);
+      }
+    }
+  } catch {
+    // Retorna null para cair no fallback determinístico
+  }
+  return null;
 }
 
 /** Fluxo de perguntas do quiz e emissão de selo digital */
