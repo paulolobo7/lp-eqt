@@ -79,6 +79,19 @@ export function AppProvider({
                 <Icon nome="chat" />
                 {cta.qrAbrirAqui}
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setQrAberto(false);
+                  const el = document.getElementById("experimente");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="text-xs text-brand-celeste underline underline-offset-4 hover:text-texto cursor-pointer text-center"
+              >
+                ⚡ Ou teste o bot agora no simulador desta página
+              </button>
               <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-texto-4">
                 {cta.qrRodape} {numeroRotulo}
               </div>

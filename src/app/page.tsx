@@ -23,12 +23,20 @@ export default async function Home() {
     svc.community.contagemPorBairro(),
     seloDeExemplo(),
   ]);
-  const numero = process.env.WHATSAPP_NUMERO?.replace(/\D/g, "");
+  const numero = (process.env.WHATSAPP_NUMERO || "559820557000").replace(/\D/g, "");
   const link = linkWhatsApp(numero, cta.mensagemPronta);
   const qrSvg = await QRCode.toString(link, { type: "svg", margin: 0, color: { dark: "#14185F", light: "#F5F7FF" }, errorCorrectionLevel: "M" });
 
+  const rotuloFormatado = numeroWhatsAppValido(numero) ? (
+    <span className="font-mono font-medium text-brand-celeste">
+      +{numero.slice(0, 2)} ({numero.slice(2, 4)}) {numero.slice(4, 8)}-{numero.slice(8)}
+    </span>
+  ) : (
+    <Ph>{PH.numero}</Ph>
+  );
+
   return (
-    <AppProvider linkWhatsApp={link} qrSvg={qrSvg} numeroRotulo={numeroWhatsAppValido(numero) ? <span>+{numero}</span> : <Ph>{PH.numero}</Ph>}>
+    <AppProvider linkWhatsApp={link} qrSvg={qrSvg} numeroRotulo={rotuloFormatado}>
       <a href="#como" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-superficie focus:p-3">
         Pular para Como funciona
       </a>
