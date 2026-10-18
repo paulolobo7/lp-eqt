@@ -48,34 +48,8 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
     { rotulo: "🔌 Aparelho queimou", texto: "Minha geladeira queimou na chuva forte, como peço ressarcimento à Equatorial?" },
     { rotulo: "💥 Arco elétrico", texto: "O que é arco elétrico na alta tensão e qual a distância segura?" },
     { rotulo: "🪁 Pipa na rede", texto: "Uma pipa enroscou no fio de alta tensão, posso tirar?" },
-    { rotulo: "🏆 Fazer Quiz", texto: "Quero fazer o quiz de segurança e ganhar o selo" },
+    { rotulo: "🏆 Iniciar Quiz", texto: "quiz" },
   ];
-
-  const enviarMensagemLivre = async (txt?: string, eAudio?: boolean) => {
-    const msg = (txt ?? textoLivre).trim();
-    if (!msg || enviandoLivre) return;
-    setTextoLivre("");
-    dispatch({ t: "usuario", texto: eAudio ? `🎤 ${msg}` : msg });
-    setEnviandoLivre(true);
-    try {
-      const res = await fetch("/api/whatsapp/bot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensagem: msg, eAudio }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.mensagens && Array.isArray(json.mensagens) && json.mensagens.length > 0) {
-          const itens: MsgSemId[] = json.mensagens.map((t: string) => ({ k: "bot" as const, texto: t }));
-          dispatch({ t: "falar", itens });
-        }
-      }
-    } catch {
-      dispatch({ t: "falar", itens: [{ k: "bot", texto: chat.erroServico }] });
-    } finally {
-      setEnviandoLivre(false);
-    }
-  };
 
   const respostasBairros: RespostaRapida[] = bairros.map((b) => ({ rotulo: b.nome, icone: "house", acao: { t: "bairro", id: b.id, nome: b.nome } }));
 
@@ -128,6 +102,48 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
       dispatch({ t: "falar", itens: [{ k: "bot", texto: chat.erroServico }], respostas: [{ rotulo: chat.respostas.comecarQuiz, icone: "check", acao: { t: "comecar-quiz" } }] });
     }
   }, [e.perguntas]);
+
+  const iniciarQuizVisual = useCallback(() => {
+    dispatch({ t: "usuario", texto: chat.respostas.comecarQuiz });
+    if (!e.bairro) {
+      dispatch({ t: "resultado", bairro: { id: "vila-esperanca", nome: "Vila Esperança" }, nivel: "alto" });
+    }
+    void mostrarPergunta(0);
+  }, [e.bairro, mostrarPergunta]);
+
+  const enviarMensagemLivre = async (txt?: string, eAudio?: boolean) => {
+    const msg = (txt ?? textoLivre).trim();
+    if (!msg || enviandoLivre) return;
+
+    const msgLower = msg.toLowerCase();
+    if (msgLower === "quiz" || msgLower.includes("fazer quiz") || msgLower.includes("começar quiz") || msgLower.includes("iniciar quiz")) {
+      setTextoLivre("");
+      iniciarQuizVisual();
+      return;
+    }
+
+    setTextoLivre("");
+    dispatch({ t: "usuario", texto: eAudio ? `🎤 ${msg}` : msg });
+    setEnviandoLivre(true);
+    try {
+      const res = await fetch("/api/whatsapp/bot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagem: msg, eAudio }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.mensagens && Array.isArray(json.mensagens) && json.mensagens.length > 0) {
+          const itens: MsgSemId[] = json.mensagens.map((t: string) => ({ k: "bot" as const, texto: t }));
+          dispatch({ t: "falar", itens });
+        }
+      }
+    } catch {
+      dispatch({ t: "falar", itens: [{ k: "bot", texto: chat.erroServico }] });
+    } finally {
+      setEnviandoLivre(false);
+    }
+  };
 
   const executar = (a: Acao) => {
     switch (a.t) {
