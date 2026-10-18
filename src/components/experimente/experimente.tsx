@@ -40,6 +40,42 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
   const logRef = useRef<HTMLDivElement>(null);
   const telaRef = useRef<HTMLDivElement>(null);
   const [nome, setNome] = useState("");
+  const [textoLivre, setTextoLivre] = useState("");
+  const [enviandoLivre, setEnviandoLivre] = useState(false);
+
+  const sugestoesRapidas = [
+    { rotulo: "⚡ Cabo caído", texto: "O que fazer se tiver um cabo caído no chão da rua?" },
+    { rotulo: "🔌 Aparelho queimou", texto: "Minha geladeira queimou na chuva forte, como peço ressarcimento à Equatorial?" },
+    { rotulo: "💥 Arco elétrico", texto: "O que é arco elétrico na alta tensão e qual a distância segura?" },
+    { rotulo: "🪁 Pipa na rede", texto: "Uma pipa enroscou no fio de alta tensão, posso tirar?" },
+    { rotulo: "🏆 Fazer Quiz", texto: "Quero fazer o quiz de segurança e ganhar o selo" },
+  ];
+
+  const enviarMensagemLivre = async (txt?: string, eAudio?: boolean) => {
+    const msg = (txt ?? textoLivre).trim();
+    if (!msg || enviandoLivre) return;
+    setTextoLivre("");
+    dispatch({ t: "usuario", texto: eAudio ? `🎤 ${msg}` : msg });
+    setEnviandoLivre(true);
+    try {
+      const res = await fetch("/api/whatsapp/bot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagem: msg, eAudio }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.mensagens && Array.isArray(json.mensagens) && json.mensagens.length > 0) {
+          const itens: MsgSemId[] = json.mensagens.map((t: string) => ({ k: "bot" as const, texto: t }));
+          dispatch({ t: "falar", itens });
+        }
+      }
+    } catch {
+      dispatch({ t: "falar", itens: [{ k: "bot", texto: chat.erroServico }] });
+    } finally {
+      setEnviandoLivre(false);
+    }
+  };
 
   const respostasBairros: RespostaRapida[] = bairros.map((b) => ({ rotulo: b.nome, icone: "house", acao: { t: "bairro", id: b.id, nome: b.nome } }));
 
@@ -300,11 +336,67 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
                 </button>
               </form>
             ) : (
-              <div className="flex flex-none items-center gap-2 bg-marinho px-3 pt-2 pb-3.5" aria-hidden="true">
-                <div className="flex min-h-12 flex-1 items-center rounded-full bg-superficie px-4 text-[15px] text-[#8E95CF]">{chat.composerVazio}</div>
-                <span className="grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,#5AC8FA,#8B5CF6)] text-[#0D1046]">
-                  <Icon nome="mic" />
-                </span>
+              <div className="flex flex-col flex-none bg-marinho">
+                <div className="flex items-center gap-1.5 overflow-x-auto px-3 py-1.5 scrollbar-none border-t border-[rgba(185,191,234,.12)]">
+                  <span className="text-[11px] font-semibold text-[#8E95CF] shrink-0 uppercase tracking-wider mr-1">Dúvidas:</span>
+                  {sugestoesRapidas.map((s, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      disabled={enviandoLivre || e.digitando}
+                      onClick={() => void enviarMensagemLivre(s.texto)}
+                      className="shrink-0 text-[12px] bg-[rgba(154,163,240,.12)] hover:bg-[rgba(154,163,240,.24)] text-[#E2E6FF] px-2.5 py-1 rounded-full border border-[rgba(154,163,240,.2)] transition-colors active:scale-95 disabled:opacity-50 cursor-pointer"
+                    >
+                      {s.rotulo}
+                    </button>
+                  ))}
+                </div>
+                <form
+                  onSubmit={(ev) => {
+                    ev.preventDefault();
+                    void enviarMensagemLivre();
+                  }}
+                  className="flex items-center gap-2 px-3 pt-1 pb-3.5"
+                >
+                  <label htmlFor="mensagem-bot-livre" className="sr-only">
+                    Digite sua dúvida para o EquaBot
+                  </label>
+                  <input
+                    id="mensagem-bot-livre"
+                    value={textoLivre}
+                    onChange={(ev) => setTextoLivre(ev.target.value)}
+                    placeholder="Pergunte ao EquaBot (ex: cabo caído, TV queimou)..."
+                    disabled={enviandoLivre || e.digitando}
+                    autoComplete="off"
+                    enterKeyHint="send"
+                    className="min-h-12 min-w-0 flex-1 rounded-full border border-borda bg-superficie px-4 text-[14px] text-texto outline-none placeholder:text-[#8E95CF] focus-visible:border-ciano disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    title="Simular envio de áudio para transcrição (Whisper)"
+                    aria-label="Simular gravação de áudio para o EquaBot"
+                    disabled={enviandoLivre || e.digitando}
+                    onClick={() =>
+                      void enviarMensagemLivre(
+                        "Olá EquaBot, caiu um cabo na minha rua aqui em São Luís e minha TV queimou com a queda de energia, o que eu faço?",
+                        true
+                      )
+                    }
+                    className="grid h-12 w-12 flex-none cursor-pointer place-items-center rounded-full bg-[linear-gradient(135deg,#5AC8FA,#8B5CF6)] text-[#0D1046] active:scale-95 disabled:opacity-50 hover:brightness-110 transition-transform"
+                  >
+                    <Icon nome="mic" />
+                  </button>
+                  {textoLivre.trim().length > 0 && (
+                    <button
+                      type="submit"
+                      aria-label="Enviar mensagem para o EquaBot"
+                      disabled={enviandoLivre || e.digitando}
+                      className="grid h-12 w-12 flex-none cursor-pointer place-items-center rounded-full bg-ciano text-[#0D1046] active:scale-95 disabled:opacity-50 transition-transform"
+                    >
+                      <Icon nome="send" />
+                    </button>
+                  )}
+                </form>
               </div>
             )}
 

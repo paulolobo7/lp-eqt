@@ -57,10 +57,16 @@ faz isso ao salvar variáveis e reimplantar).
   - `GET /api/quiz`: perguntas **sem gabarito**.
   - `POST /api/quiz/submit`: `{respostas, primeiroNome?, bairroId?, nivel?}` → `{acertos, erradas[], resultados[], seloId?}`. O selo só sai com 3 de 3.
   - `GET /api/badge/[id]`: PNG 1080×1350; `?format=square` 1080×1080; `&download=1` para baixar.
-  - `GET /api/channels`: canais oficiais (placeholders).
-  - `GET|POST /api/whatsapp/webhook`: stub da WhatsApp Business Platform, com TODOs.
+  - `GET /api/channels`: canais oficiais.
+  - `GET|POST /api/whatsapp/webhook`: Webhook unificado que atende tanto a **Meta WhatsApp Cloud API** quanto o **WAHA (WhatsApp HTTP API)** conforme o `fluxo bot.json` (n8n).
+  - `POST /api/whatsapp/bot`: endpoint REST direto para conversar com o **EquaBot** (resposta educativa, quiz e selo).
+- **Motor do Bot de WhatsApp (`src/lib/bot/`)**:
+  - `knowledge.ts`: base de conhecimento completa de segurança elétrica, São Luís/MA, cuidados e ressarcimento de eletrodomésticos na Equatorial.
+  - `engine.ts`: inteligência conversacional, memória por sessão, suporte a áudio transcrito, quiz e selo.
+  - `waha-handler.ts`: pipeline idêntico ao `fluxo bot.json` (filtro de grupos/API, áudio, buffer de 6.5s, anti-colisão com atendente humano de 50min).
 - **`/selo/[id]`**: página pública do selo com `generateMetadata` (Open Graph com a imagem do selo, `noindex`).
 - **Selo sem banco**: o id é um token assinado (HMAC-SHA256 com `BADGE_SECRET`) que carrega só primeiro nome, bairro, faixa e data.
+- **Documentação do Bot**: veja o guia passo a passo em [`BOT_WHATSAPP_GUIA.md`](./BOT_WHATSAPP_GUIA.md).
 - **Textos** em `src/content` (`site.ts`, `quiz.ts`, `cuidados.ts`, `placeholders.ts`).
 
 ### Como trocar os mocks pela integração real

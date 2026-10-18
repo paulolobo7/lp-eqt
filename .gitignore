@@ -71,4 +71,5 @@ CLAUDE.local.md
 /design/referencia/
 
 # documentação (specs, planos e capturas): só na branch dev
-/docs/
+/docs/*
+!/docs/conhecimento-vizinho-alta-tensao.md

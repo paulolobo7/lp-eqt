@@ -1,0 +1,1470 @@
+{
+  "name": "fluxo bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        160
+      ],
+      "id": "486841f4-0b65-4645-a1a0-477e4c343c17",
+      "name": "Webhook",
+      "webhookId": "b5fd85cb-ecf6-4fad-acb7-c80f91d91d58",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7c0e0473-318c-4c68-b2e1-3fae72a52277",
+              "name": "message_id",
+              "value": "={{ $json.body.payload.id }}",
+              "type": "string"
+            },
+            {
+              "id": "c7b08c6c-b318-497c-912d-7dc9ea00b914",
+              "name": "session",
+              "value": "={{ $json.body.session }}",
+              "type": "string"
+            },
+            {
+              "id": "4d391d1b-0e0c-4deb-b3fb-845a27115a01",
+              "name": "phone",
+              "value": "={{ $json.body.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "368f3619-e055-43d8-b745-75686294880d",
+              "name": "source",
+              "value": "={{ $json.body.payload.source }}",
+              "type": "string"
+            },
+            {
+              "id": "10c562df-88c1-4ce5-afa5-c4d308f0ec80",
+              "name": "text_message",
+              "value": "={{ $json.body.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "601a4d17-dd7a-4b19-ac9d-8d7d2dec874a",
+              "name": "hasMedia",
+              "value": "={{ $json.body.payload.hasMedia }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c701a4db-0804-4372-bb9b-735cc3833de1",
+              "name": "fromMe",
+              "value": "={{ $json.body.payload.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "48bdec5a-f00c-477d-808a-814c4fb392e2",
+              "name": "event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            },
+            {
+              "id": "d9efe609-d6e8-4930-886b-02e440a1076b",
+              "name": "pushName",
+              "value": "={{ $json.body.payload._data.Info.PushName }}",
+              "type": "string"
+            },
+            {
+              "id": "8a5a61cb-9690-4b7b-bddd-330a5092bdb3",
+              "name": "messageType",
+              "value": "={{ $json.body.payload._data.Info.Type }}",
+              "type": "string"
+            },
+            {
+              "id": "58b9a117-305c-4a8b-9b48-4e1aacbda5c6",
+              "name": "isGroup",
+              "value": "={{ $json.body.payload._data.Info.IsGroup }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        160
+      ],
+      "id": "0693a075-e0c5-4256-8f29-313f1eafc3b6",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ff60bc2b-b58a-4c15-8afe-1606ed28bacb",
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "api",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        160
+      ],
+      "id": "fe6230ad-5646-4e4f-8790-2382d8925ef7",
+      "name": "Ignorar API"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ad094a02-440d-4881-8eb7-582f95ebbe95",
+              "leftValue": "={{ $json.isGroup }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        160
+      ],
+      "id": "4384194d-5d03-4509-a74f-cc0af4bede16",
+      "name": "Ignorar Grupos"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "467bf923-09d2-43b0-8b0c-3f9637961f7c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6a45e161-bde4-40de-b75e-6798292d2226",
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "media",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        48
+      ],
+      "id": "7e20222d-23a5-4cad-b0ce-e1fac1f2db13",
+      "name": "Tipo de mensagem"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.phone }} chat-memory",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        4256,
+        304
+      ],
+      "id": "06738fc9-90ba-409d-be8a-0193bed5d151",
+      "name": "Postgres botNPS"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.phone }}",
+        "messageId": "=",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        4944,
+        144
+      ],
+      "id": "41c66663-2344-4125-b6fd-c5f4617f177b",
+      "name": "Vizualizar",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.phone }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        5088,
+        144
+      ],
+      "id": "f4c17bf1-8c34-43a6-bed8-b6bc13465ad0",
+      "name": "Digitar",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.phone }}",
+        "reply_to": "=",
+        "text": "={{ $('Agent OpenIA').item.json.output }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        5424,
+        144
+      ],
+      "id": "ccdacdee-7059-4f8b-9703-91981e6f9557",
+      "name": "Responder",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3bdb980f-a5dc-476a-8652-06ccb78b9445",
+              "name": "message",
+              "value": "={{ $('Dados').item.json.text_message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1216,
+        32
+      ],
+      "id": "3672eb9b-afd4-4b99-a787-879195bf659e",
+      "name": "Mensagem de texto"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ed2da4ea-84fb-4edd-a388-52bf2b1df486",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1584,
+        32
+      ],
+      "id": "6e56f21d-0c5f-431f-9a75-428475d12035",
+      "name": "Mensagem"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c5ca8f35-44a1-4bb9-9bd8-79f31b3b5fed",
+              "name": "mimeType",
+              "value": "={{ $('Webhook').item.json.body.payload.media.mimetype }}",
+              "type": "string"
+            },
+            {
+              "id": "e89548cc-2fda-4ac3-bd22-82e683db3b7a",
+              "name": "URL",
+              "value": "={{ $('Webhook').item.json.body.payload.media.url.replace('http://localhost:3000', 'waha:3000') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        864,
+        288
+      ],
+      "id": "5d41779a-1b04-4925-97bc-9aa8b669d3e9",
+      "name": "Dados Media"
+    },
+    {
+      "parameters": {
+        "url": "=http://{{ $json.URL }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wahaApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1184,
+        288
+      ],
+      "id": "ea6b9aa8-1657-4b9b-a75b-162ae5279f68",
+      "name": "Baixar Audio"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mimeType }}",
+                    "rightValue": "={{ $json.mimeType }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "307efbcc-90bc-452b-858a-894dd8479165"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        288
+      ],
+      "id": "63000de6-dda2-4fdd-a3d0-ef26c0700f6b",
+      "name": "Tipo de Midia"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19b6be94-d4a2-4711-8d9b-7437448b923a",
+              "name": "message",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1488,
+        288
+      ],
+      "id": "8ca40bda-8a23-415b-b255-ab5601d7ac39",
+      "name": "Mensagem de Audio"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        288
+      ],
+      "id": "c4964c88-3b75-4c7a-bd2d-df1eebe2fd4f",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "CAPITAÇÃO E TRANSCRIÇÃO DE AUDIO",
+        "height": 208,
+        "width": 928
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "66436ba0-6f07-4f8c-852e-3a4b9b941231",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "AÇÕES DA IA ATRAVÉS DA API WAHA\n",
+        "height": 208,
+        "width": 640,
+        "color": "#355C33"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4912,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "e1c51032-2b53-4c56-83b3-4207b54822bc",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "INTERAÇÃO E BUSCA DE DADOS",
+        "height": 208,
+        "width": 352,
+        "color": "#74642A"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "a1f1d708-679f-43dd-bacc-8c30c8845e7d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "IGNORANDO GRUPOS E API",
+        "height": 208,
+        "width": 336,
+        "color": "#565761"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "13d49b17-1ee7-4672-98be-7b7526c8e7d8",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "FILTRO DE MENSAGENS",
+        "height": 192,
+        "width": 928,
+        "color": "#563F5A"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "64341119-fc8a-4367-88d3-62930ff9ac82",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5264,
+        144
+      ],
+      "id": "429f7d39-e446-4ec8-9b96-5e9250ef8138",
+      "name": "Espera de 2 segundos",
+      "webhookId": "0c8a7604-b422-4499-8390-c5c30a6b8101"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "Voce e o EquaBot, o assistente virtual oficial e educador comunitario do programa 'Vizinho de Alta Tensao' da Equatorial Energia Maranhao em Sao Luis e regiao metropolitana (Desafio #486 do Hackathon Equatorial).\n\nSua missao e salvar vidas, educar a comunidade e empoderar os moradores que residem proximos ou no entorno de subestacoes e linhas de transmissao de energia eletrica.\n\nPUBLICO-ALVO:\nMoradores de comunidades e bairros de Sao Luis/MA proximos a ativos de alta tensao (Tirirical, Cohatrac, Maracana, Coroadinho, Cidade Operaria, Vinhais, Sao Cristovao, Distrito Industrial, Itaqui-Bacanga/Anjo da Guarda, Vila Esperanca, etc.).\n\nTOM DE VOZ E ESTILO:\n- Linguagem simples, acolhedora, humana, empatica e direta (estilo WhatsApp).\n- Evite jargoes tecnicos pesados ou burocraticos.\n- Use emojis pontuais para facilitar a leitura rapida (⚡, 🔌, 🛡️, 📞, ❌, ✅).\n- Priorize sempre a preservacao da vida e a seguranca imediata.\n\nDIRETRIZES DE SEGURANCA E EDUCACAO COMUNITARIA:\n\n1. CABO CAIDO OU ROMPIDO NO CHAO:\n- REGRA DE OURO: Considere SEMPRE energizado. NUNCA encoste e NUNCA se aproxime!\n- Distancia minima de seguranca: pelo menos 10 a 15 metros de distancia.\n- Tensao de passo: O solo conduz corrente eletrica em circulos concentricos. Se estiver muito proximo e sentir formigamento, junte os pes e pule com ambos unidos ou arraste os pes sem desencostar do solo.\n- NUNCA tente afastar o cabo com pedaco de madeira, vassoura, cano ou borracha (alta tensao conduz eletricidade fatal ate atraves de madeira umida).\n- Carro atingido por cabo: Fique DENTRO do carro (Gaiola de Faraday). So pule se o carro pegar fogo, saltando sem tocar no carro e no chao ao mesmo tempo, caindo com os dois pes juntos.\n- Acionamento imediato: Ligue 116 (Equatorial) e 193 (Bombeiros).\n\n2. ARCOS ELETRICOS, FAISCAS E ESTALOS:\n- Na alta tensao (69kV a 230kV), a eletricidade pula pelo ar (flashover) sem precisar de contato fisico direto!\n- Zumbidos fortes, estalos ou faiscas nos isoladores indicam fuga de corrente.\n- Em dias de chuva, garoa ou alta umidade em Sao Luis, o perigo de arco eletrico e muito maior.\n- Mantenha distancia minima de pelo menos 10 metros e ligue 116.\n\n3. PIPAS E PAPAGAIOS PERTO DA REDE:\n- Proibido empinar pipa perto de fios, postes, torres e subestacoes.\n- Cerol e linha chilena contem po condutor (metal/vidro/quartzo) que conduz eletricidade e causa mortes imediatas por choque.\n- Se a pipa enroscar na fiacao: DEIXE LA! NUNCA tente tirar com vara de bambu, cano de PVC, vergalhao e nunca suba em postes ou muros. Nenhuma pipa vale uma vida.\n\n4. CONSTRUCAO CIVIL, REFORMAS, LAJES E ANTENAS:\n- Respeitar a Faixa de Servidao sob as linhas de transmissao (area legal de seguranca onde e proibido construir ou plantar arvores altas).\n- Ao trabalhar em lajes e reformas: carregar vergalhoes de ferro, reguas de pedreiro e escadas sempre na horizontal. Se o ferro se aproximar do cabo de alta tensao, forma-se um arco voltaico fatal.\n\n5. INVASAO DE SUBESTACOES E AREAS CERCADAS:\n- Subestacoes contem equipamentos de altissima voltagem ao ar livre.\n- NUNCA pule o muro ou cerca de subestacoes por motivo algum (nem para buscar bola, pipa ou animal).\n- Ligue 116 para solicitar resgate tecnico especializado da Equatorial.\n\n6. FURTO DE CABOS E VANDALISMO:\n- Furto de cabos e crime (Art. 265 do Codigo Penal), gera explosoes com risco de morte instantanea e deixa hospitais, escolas e comunidades no escuro.\n- Nao confronte os suspeitos; denuncie anonimamente no 116 ou Policia Militar 190.\n\n7. CUIDADOS COM ELETRODOMESTICOS E RESSARCIMENTO DE DANOS:\n- Por que queimam: Descargas atmosfericas (raios), tempestades fortes com oscilacao brusca de tensao ou curto-circuito na rede externa.\n- Prevencao em temporais:\n  * Tire da tomada aparelhos sensiveis (TVs, computadores, micro-ondas, videogames) e cabos de rede/antena.\n  * Use filtros de linha com fusivel e Dispositivos de Protecao contra Surtos (DPS).\n  * Mantenha o aterramento da residencia em dia.\n- O QUE FAZER SE O APARELHO QUEIMOU (RESSARCIMENTO NA EQUATORIAL MARANHAO):\n  * PRAZO: Ate 90 dias corridos a partir da data provavel da ocorrencia (conforme ANEEL 1.000/2021).\n  * ATENCAO CRUCIAL: NAO conserte e NAO jogue fora o aparelho danificado antes da vistoria da Equatorial! A empresa tem direito de realizar vistoria tecnica em ate 10 dias corridos (ou 1 dia se for geladeira/freezer com alimentos/remedios pereciveis).\n  * Documentos e dados: Conta Contrato, dados do titular (Nome, CPF), data/hora aproximada da oscilacao/chuva, relato da ocorrencia, marca e modelo do aparelho.\n  * Canais para pedir: WhatsApp da Clara (98) 2055-7000 (digite 'Danos Eletricos' ou 'Ressarcimento'), site www.equatorialenergia.com.br (Agencia Web), App Equatorial Energia ou Central 116.\n\n8. QUIZ E SELO VIZINHO DE ALTA TENSAO:\n- Convide o morador a realizar o Quiz com 3 perguntas rapidas de seguranca.\n- Se o usuario acertar as 3 perguntas, parabenize com entusiasmo e forneca a orientacao para acessar e compartilhar o Selo Oficial no Status do WhatsApp!\n\nCANAIS OFICIAIS EQUATORIAL MARANHAO:\n- Central 24h: 116 (ligacao gratuita)\n- WhatsApp da Clara: (98) 2055-7000\n- App Equatorial Energia (Android e iOS)\n- Bombeiros: 193\n- Policia Militar: 190"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        4176,
+        144
+      ],
+      "id": "a56b9ec4-f5d2-4463-b15a-ca16538c81ef",
+      "name": "Agent OpenIA",
+      "executeOnce": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3da0a842-503a-49b5-9353-5196da6808a4",
+              "name": "message",
+              "value": "={{ $('Mensagem').item.json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2656,
+        160
+      ],
+      "id": "2d7c293e-e2da-4ab5-8396-829683b36af0",
+      "name": "Mensagem Geral"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.phone }} temp",
+        "messageData": "={{ $json.message }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        160
+      ],
+      "id": "1acaf58e-0296-47bd-ad6e-ce31f3044ea1",
+      "name": "Mensagem Temporária"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Messages",
+        "key": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.phone }} temp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3264,
+        160
+      ],
+      "id": "c36f1a59-2e2b-4196-92f9-d2a31e2c29a4",
+      "name": "Mensagens"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "15827277-1285-4608-be79-c48e733f74bb",
+              "leftValue": "={{ $('Mensagem Geral').item.json.message }}",
+              "rightValue": "={{ $json.Messages.last() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3488,
+        160
+      ],
+      "id": "4aaa6efb-0ac2-44a6-95c4-0ee7c3e05ceb",
+      "name": "Ultima Mensagem"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.phone }} temp"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3712,
+        144
+      ],
+      "id": "850dd33d-1072-4397-ad00-8b0a83275669",
+      "name": "Excluir Lista Temporária"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e00d8f56-a309-47d2-a0a0-6a22a62255c1",
+              "name": "message",
+              "value": "={{ $json.Messages.join(' ') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3936,
+        144
+      ],
+      "id": "bbdd0aec-4d82-4802-8b23-a14c9d9ee453",
+      "name": "Mensagem Final"
+    },
+    {
+      "parameters": {
+        "content": "BUFFER DE MENSAGENS PICOTADAS\n",
+        "height": 208,
+        "width": 1440,
+        "color": "#2D4E3E"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2624,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "00d01a5e-49b2-4200-b758-071786ccce05",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"messages\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\"messages\"]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4624,
+        304
+      ],
+      "id": "c7ed1e0a-e74d-49f5-929a-0063abbf8be2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Formate e separe a seguinte mensagem: {{ $json.output }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Por favor, gere a saída no seguinte formato JSON:\n{\n  \"messages\": [\n    \"splitedMessage\",\n    \"splitedMessage\",\n    \"splitedMessage\"\n  ]\n}\n\n### Certifique-se de que a resposta siga exatamente essa estrutura, incluindo os colchetes e as aspas.\n\n### As mensagens devem ser divididas de forma humanizada e legíveis para Whatsapp.\n\n### Nunca altere o texto original, remova as notações markdown quando presentes, deixando apenas texto simples com pontuações e acentuação das palavras.\n\n### Jamais separe uma mensagem vazia.\n\n### Use apenas texto simples, sem MARKDOWN, se existir markdown no texto original, altere para remover o markdown apenas.\n\n### Envie links em texto simples, na seguinte formatação de exemplo:\nhttps://{url}\n\n### O máximo de mensagens divididas é 4. Nunca deve existir mais do que 4 mensagens dentro do array \"messages\".\n\n### Nunca invente informação, apenas divida o texto original.\n\n### O texto final deve ser o texto original divido em mensagens menores (quando necessário).\n\n### Caso a mensagem já for curta, deixe o array com apenas uma mensagem.\n\n### Nunca invente nenhum link, nem altere a mensagem original, de forma alguma. É proíbido alterar a mensagem original, a não ser que seja para remover markdown do texto e ajustar links."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        4576,
+        144
+      ],
+      "id": "f679c1c8-3523-42d9-94ae-7ee7d11f60bf",
+      "name": "Output Parser1"
+    },
+    {
+      "parameters": {
+        "content": "BOT HUMANIZADO\n",
+        "height": 336,
+        "width": 352,
+        "color": "#75722F"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4512,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "fc89c433-e40e-4bd4-b234-03f2431a48fb",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "AGENTE IA\n",
+        "height": 352,
+        "width": 352,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4112,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "c336478c-f377-4062-ba1b-62482b376091",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4544,
+        304
+      ],
+      "id": "68f3c67c-c91d-4ad2-be6a-c5a077af9c99",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4160,
+        304
+      ],
+      "id": "9c1c5a68-05b2-4199-b8aa-16a39a2a446b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1f2b8e52-b469-4474-b486-8da10ba032c0",
+              "leftValue": "={{ $('Dados').item.json.fromMe }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        32
+      ],
+      "id": "47f037c6-20da-4b18-b1c3-8b33055dea88",
+      "name": "FromMe?"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "={{ $('Mensagem').item.json.message }}",
+              "hideFromUI": "="
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        2160,
+        80
+      ],
+      "id": "d5e7943a-458a-472a-b238-ff4c3f58b0cb",
+      "name": "Inserir mensagem do atendente"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "isBlocked",
+        "key": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.phone }} block",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        288
+      ],
+      "id": "32788f4e-0671-4eb9-83ce-72e3854232f8",
+      "name": "Buscar Chave Block"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.phone }} block",
+        "value": "true",
+        "expire": true,
+        "ttl": 3000
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        80
+      ],
+      "id": "f3159e07-4f83-4b72-90d5-41af9c6b9e2c",
+      "name": "Chave Block"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1ffb0174-1bba-4efd-b951-a34da7c2208c",
+              "leftValue": "={{ $json.isBlocked }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2080,
+        288
+      ],
+      "id": "d837e824-b839-4990-91a8-e4fb792115ff",
+      "name": "isBlocked?"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "user",
+              "message": "={{ $('Mensagem').item.json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        2256,
+        272
+      ],
+      "id": "95fc98c3-746e-4863-8435-3b75a47d4392",
+      "name": "Inserir mensagem do clinte"
+    },
+    {
+      "parameters": {
+        "content": "BLOQUEIO DE PARA INTERAÇÃO HUMANA\n",
+        "height": 448,
+        "width": 800,
+        "color": "#16556A"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "9bb4f58d-1cd7-47f5-b356-2be6b984620d",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "model": "=gemini-3.5-flash-lite",
+        "storeNames": [
+          "fileSearchStores/perguntas-frequentes-4dvpzzr08ggj"
+        ],
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `Query para pesquisa no RAG`, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-file-search.googleFileSearchTool",
+      "typeVersion": 1,
+      "position": [
+        4352,
+        304
+      ],
+      "id": "6c1cb48f-1704-498f-abcb-627807a9663e",
+      "name": "RAG do Assistente Virtual",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "amount": 6.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3072,
+        160
+      ],
+      "id": "061c52f2-eb4e-46c2-944c-1116996cd1e7",
+      "name": "6 segundos",
+      "webhookId": "3da25a97-c022-4cc3-84b1-bd6273cca897"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "Ignorar API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ignorar API": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Ignorar Grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ignorar Grupos": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Tipo de mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo de mensagem": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dados Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres botNPS": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent OpenIA",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Inserir mensagem do atendente",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Inserir mensagem do clinte",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vizualizar": {
+      "main": [
+        [
+          {
+            "node": "Digitar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Digitar": {
+      "main": [
+        [
+          {
+            "node": "Espera de 2 segundos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de texto": {
+      "main": [
+        [
+          {
+            "node": "Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem": {
+      "main": [
+        [
+          {
+            "node": "FromMe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Media": {
+      "main": [
+        [
+          {
+            "node": "Tipo de Midia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Audio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo de Midia": {
+      "main": [
+        [
+          {
+            "node": "Baixar Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de Audio": {
+      "main": [
+        [
+          {
+            "node": "Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Espera de 2 segundos": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent OpenIA": {
+      "main": [
+        [
+          {
+            "node": "Output Parser1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Geral": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Temporária",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Temporária": {
+      "main": [
+        [
+          {
+            "node": "6 segundos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Ultima Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ultima Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Excluir Lista Temporária",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Excluir Lista Temporária": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Final": {
+      "main": [
+        [
+          {
+            "node": "Agent OpenIA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Output Parser1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Parser1": {
+      "main": [
+        [
+          {
+            "node": "Vizualizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent OpenIA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FromMe?": {
+      "main": [
+        [
+          {
+            "node": "Chave Block",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar Chave Block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chave Block": {
+      "main": [
+        [
+          {
+            "node": "Inserir mensagem do atendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Chave Block": {
+      "main": [
+        [
+          {
+            "node": "isBlocked?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isBlocked?": {
+      "main": [
+        [
+          {
+            "node": "Inserir mensagem do clinte",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Geral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG do Assistente Virtual": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent OpenIA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 segundos": {
+      "main": [
+        [
+          {
+            "node": "Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3883a0f7-6c81-43fe-9439-19922852656a",
+  "meta": {
+    "instanceId": "e8b1d82d39d872edebd6cdcf2024727527612dc2fb69482fe2954b25e17e0400"
+  },
+  "nodeGroups": [],
+  "id": "EkOSt0Mei5fThN1v",
+  "tags": []
+}

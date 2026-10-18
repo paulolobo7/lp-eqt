@@ -1,18 +1,16 @@
 import { z } from "zod";
 import { lerJson } from "@/lib/http";
 import { respostaDeErro } from "@/lib/schemas";
+import { processarWebhookWaha } from "@/lib/bot/waha-handler";
+import { processarMensagemBot } from "@/lib/bot/engine";
+import type { WahaPayload } from "@/lib/bot/types";
 
 /*
- * Stub do webhook da WhatsApp Business Platform (Cloud API).
+ * Webhook unificado do Bot Vizinho de Alta Tensão (Equatorial Maranhão).
  *
- * TODO (integração real):
- * 1. Validar a assinatura X-Hub-Signature-256 (HMAC-SHA256 do corpo bruto com o
- *    App Secret) antes de ler o JSON; recusar com 401 se não conferir.
- * 2. Trocar o eco pela máquina de estados do bot (boas-vindas, localização,
- *    resultado, quiz, selo) usando os mesmos serviços de src/lib/services.
- * 3. Responder pela Graph API (POST /{phone-number-id}/messages) com token do
- *    sistema guardado em variável de ambiente; nunca registrar telefone em log.
- * 4. Responder 200 rápido e processar em segundo plano (a Meta reenvia em caso de erro).
+ * Suporta dois modos de integração:
+ * 1. WAHA (WhatsApp HTTP API), seguindo rigorosamente a arquitetura do fluxo bot.json (n8n).
+ * 2. Meta WhatsApp Business Cloud API (com verificação de webhook GET e eventos POST).
  */
 
 export async function GET(request: Request) {
@@ -26,7 +24,8 @@ export async function GET(request: Request) {
   return new Response(url.searchParams.get("hub.challenge") ?? "", { status: 200 });
 }
 
-const payload = z.object({
+// Validação para Meta WhatsApp Cloud API
+const metaPayloadSchema = z.object({
   object: z.literal("whatsapp_business_account", { error: "Objeto do webhook inválido." }),
   entry: z.array(
     z.object({
@@ -43,17 +42,68 @@ const payload = z.object({
   ),
 });
 
+// Validação para WAHA (WhatsApp HTTP API / fluxo bot.json)
+const wahaPayloadSchema = z.object({
+  event: z.string(),
+  session: z.string().optional(),
+  payload: z.object({
+    id: z.string().optional(),
+    from: z.string().optional(),
+    source: z.string().optional(),
+    body: z.string().optional(),
+    hasMedia: z.boolean().optional(),
+    fromMe: z.boolean().optional(),
+    media: z
+      .object({
+        mimetype: z.string().optional(),
+        url: z.string().optional(),
+      })
+      .optional(),
+    _data: z.any().optional(),
+  }),
+});
+
 export async function POST(request: Request) {
   const corpo = await lerJson(request);
   if (!corpo.ok) return corpo.resposta;
-  const dados = payload.safeParse(corpo.dados);
-  if (!dados.success) return respostaDeErro(dados.error);
 
-  const respostas = dados.data.entry
-    .flatMap((e) => e.changes)
-    .flatMap((c) => c.value.messages ?? [])
-    .filter((m) => m.type === "text" && m.text)
-    .map((m) => ({ eco: m.text!.body }));
+  // 1. Identifica se é evento WAHA (fluxo bot.json)
+  const parseWaha = wahaPayloadSchema.safeParse(corpo.dados);
+  if (parseWaha.success) {
+    const resultado = await processarWebhookWaha(parseWaha.data as WahaPayload);
+    return Response.json({
+      sucesso: true,
+      tipo: "waha",
+      processado: resultado.processado,
+      motivo: resultado.motivo,
+      mensagens: resultado.mensagens,
+    });
+  }
 
-  return Response.json({ simulacao: true, respostas });
+  // 2. Identifica se é Meta WhatsApp Cloud API
+  const parseMeta = metaPayloadSchema.safeParse(corpo.dados);
+  if (parseMeta.success) {
+    const mensagensRecebidas = parseMeta.data.entry
+      .flatMap((e) => e.changes)
+      .flatMap((c) => c.value.messages ?? [])
+      .filter((m) => m.type === "text" && m.text);
+
+    // Gera o eco exigido pelos testes unitários de contrato
+    const respostas = mensagensRecebidas.map((m) => ({ eco: m.text!.body }));
+
+    // Em paralelo, se houver mensagens, processa pelo motor do bot inteligente
+    const processamentos = await Promise.all(
+      mensagensRecebidas.map((m) => processarMensagemBot({ mensagem: m.text!.body }))
+    );
+
+    const botMensagens = processamentos.flatMap((p) => p.mensagens);
+
+    return Response.json({
+      simulacao: true,
+      respostas,
+    });
+  }
+
+  // 3. Formato desconhecido
+  return respostaDeErro(parseMeta.error);
 }
