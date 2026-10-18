@@ -13,7 +13,7 @@ const fmtDist = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(1).replace("."
 export function Mensagem({ m, aoResponder }: { m: Msg; aoResponder: (msgId: number, opcaoId: string) => void }) {
   switch (m.k) {
     case "eu":
-      return <div className="bolha-eu max-w-[82%] px-[13px] py-2.5 leading-[1.42]">{m.texto}</div>;
+      return <div className="bolha-eu max-w-[82%] px-[13px] py-2.5 leading-[1.42] whitespace-pre-line">{m.texto}</div>;
     case "eu-loc":
       return (
         <div className="bolha-eu w-[72%] overflow-hidden">
@@ -27,7 +27,7 @@ export function Mensagem({ m, aoResponder }: { m: Msg; aoResponder: (msgId: numb
         </div>
       );
     case "bot":
-      return <div className="bolha-bot max-w-[86%] px-[13px] py-2.5 leading-[1.42]">{m.texto}</div>;
+      return <div className="bolha-bot max-w-[86%] px-[13px] py-2.5 leading-[1.42] whitespace-pre-line">{m.texto}</div>;
     case "imagem":
       return (
         <figure className="bolha-bot m-0 w-[84%] overflow-hidden">
