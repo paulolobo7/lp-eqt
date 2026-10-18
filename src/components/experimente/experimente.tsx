@@ -111,6 +111,14 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
     void mostrarPergunta(0);
   }, [e.bairro, mostrarPergunta]);
 
+  useEffect(() => {
+    const handler = () => {
+      iniciarQuizVisual();
+    };
+    window.addEventListener("vat:iniciar-quiz", handler);
+    return () => window.removeEventListener("vat:iniciar-quiz", handler);
+  }, [iniciarQuizVisual]);
+
   const enviarMensagemLivre = async (txt?: string, eAudio?: boolean) => {
     const msg = (txt ?? textoLivre).trim();
     if (!msg || enviandoLivre) return;
@@ -297,6 +305,14 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
                 <strong className="truncate text-[15.5px] font-semibold">{chat.nomeBot}</strong>
                 <span className="text-[12.5px] text-[#9FE0FF]">{e.digitando ? chat.digitando : chat.online}</span>
               </div>
+              <button
+                type="button"
+                onClick={iniciarQuizVisual}
+                title="Iniciar o Quiz imediatamente"
+                className="text-[11px] font-semibold bg-[rgba(90,200,250,.18)] hover:bg-[rgba(90,200,250,.3)] text-[#5AC8FA] px-2.5 py-1 rounded-full border border-[rgba(90,200,250,.3)] transition-colors active:scale-95 cursor-pointer shrink-0"
+              >
+                🏆 Quiz Direto
+              </button>
               <TagSimulacao />
             </div>
 

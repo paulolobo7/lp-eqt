@@ -92,11 +92,14 @@ export function AppProvider({
                     if (el) {
                       el.scrollIntoView({ behavior: "smooth" });
                     }
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("vat:iniciar-quiz"));
+                    }, 350);
                   }}
                   className="btn btn-cta w-full justify-center text-center cursor-pointer"
                 >
                   <Icon nome="chat" />
-                  Testar o EquaBot na Página (Simulador)
+                  Iniciar o Quiz do EquaBot (Simulador)
                 </button>
                 {linkWhatsApp !== "#como" ? (
                   <a
