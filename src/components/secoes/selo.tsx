@@ -7,7 +7,7 @@ import { dataBR } from "@/lib/texto";
 import { useApp, type SeloObtido } from "../app-provider";
 import { compartilharLink } from "../compartilhar";
 import { Icon } from "../icon";
-import { Kicker, LogoPh, Ph } from "../ui";
+import { Kicker, LogoEquatorial, Ph } from "../ui";
 
 /** D5/M8: selo em destaque com inclinação 3D, benefício, compartilhar e baixar. */
 export function SecaoSelo({ exemplo, beneficio }: { exemplo: SeloObtido; beneficio: string }) {
@@ -50,7 +50,7 @@ export function SecaoSelo({ exemplo, beneficio }: { exemplo: SeloObtido; benefic
             >
               <div className="relative flex h-full flex-col items-center justify-between overflow-hidden rounded-[26px] bg-[radial-gradient(120%_75%_at_50%_0%,#2E3AA8_0%,#14185F_58%,#0B0E3A_100%)] px-[8%] py-[7%] text-center">
                 <div className="flex w-full items-center justify-between">
-                  <span className="scale-90 origin-left"><LogoPh rotulo="LOGO EQUATORIAL" /></span>
+                  <LogoEquatorial decorativo className="h-[clamp(26px,9%,34px)]" />
                   <span className="font-mono text-xs tracking-[.06em] text-texto-4">{selo.codigo}</span>
                 </div>
                 <svg viewBox="0 0 120 132" aria-hidden="true" className="block [filter:drop-shadow(0_0_22px_rgba(90,200,250,.55))]" style={{ width: formato === "status" ? "42%" : "30%" }}>

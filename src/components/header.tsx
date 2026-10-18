@@ -7,7 +7,15 @@ import { PH } from "@/content/placeholders";
 import { marca, nav, risco } from "@/content/site";
 import { CtaWhatsApp } from "./app-provider";
 import { Icon } from "./icon";
-import { LogoPh } from "./ui";
+import { LogoEquatorial } from "./ui";
+
+// Altura do logo: cresce com a largura; em 320px o logo, o nome e o botão de menu ainda cabem lado a lado.
+const logoCabecalho = "h-5 min-[360px]:h-7 sm:h-9";
+// Em telas muito estreitas o separador sai, para o nome caber em uma linha ao lado do logo.
+const separador = "h-7 w-px flex-none bg-[rgba(185,191,234,.3)] max-[359px]:hidden";
+// Nome do programa: sem o escudo no celular (o logo já ocupa a linha) e um pouco menor nas telas estreitas.
+const nomeCabecalho = "titulo flex items-center gap-2 text-[17px] text-texto max-[419px]:text-[15px] max-[339px]:text-sm";
+const escudoCabecalho = "max-[479px]:!hidden";
 
 export function Header() {
   const [menu, setMenu] = useState(false);
@@ -15,10 +23,10 @@ export function Header() {
     <header className="nav-topo fixed inset-x-0 top-0 z-50 isolate pt-[env(safe-area-inset-top,0px)]">
       <nav aria-label="Principal" className="mx-auto flex min-h-[68px] max-w-[1320px] items-center gap-7 px-[clamp(16px,4vw,40px)] py-2.5 max-[389px]:gap-3">
         <a href="#topo" className="mr-auto flex min-h-12 items-center gap-3 text-texto no-underline max-[389px]:gap-2">
-          <span aria-hidden="true" className="hidden sm:inline-flex"><LogoPh rotulo={marca.logoRotulo} /></span>
-          <span aria-hidden="true" className="inline-flex sm:hidden"><LogoPh curto rotulo={marca.logoRotulo} /></span>
-          <span className="titulo flex items-center gap-2 text-[17px] text-texto max-[389px]:text-[15px]">
-            <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" className="max-[339px]:!hidden" />
+          <LogoEquatorial decorativo prioridade className={logoCabecalho} />
+          <span aria-hidden="true" className={separador} />
+          <span className={nomeCabecalho}>
+            <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" className={escudoCabecalho} />
             {marca.nome}
             <span className="sr-only">, início</span>
           </span>
@@ -42,10 +50,10 @@ export function Header() {
             >
               {/* Mesma linha do cabeçalho: ao abrir, só o ícone do botão troca. */}
               <div className="flex min-h-12 items-center gap-3 max-[389px]:gap-2">
-                <span aria-hidden="true" className="hidden sm:inline-flex"><LogoPh rotulo={marca.logoRotulo} /></span>
-                <span aria-hidden="true" className="inline-flex sm:hidden"><LogoPh curto rotulo={marca.logoRotulo} /></span>
-                <Dialog.Title className="titulo m-0 mr-auto flex items-center gap-2 text-[17px] text-texto max-[389px]:text-[15px]">
-                  <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" className="max-[339px]:!hidden" />
+                <LogoEquatorial decorativo className={logoCabecalho} />
+                <span aria-hidden="true" className={separador} />
+                <Dialog.Title className={`${nomeCabecalho} m-0 mr-auto`}>
+                  <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" className={escudoCabecalho} />
                   {marca.nome}
                 </Dialog.Title>
                 <Dialog.Close className="btn !h-12 !w-12 !rounded-[14px] !p-0" aria-label={nav.fecharMenu}>

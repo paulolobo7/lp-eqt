@@ -102,7 +102,6 @@ Nada abaixo foi inventado; cada item aparece na tela marcado como placeholder.
 | `{{DISTANCIA_A_VALIDAR}}` | cartão "Faísca ou estalo" | idem |
 | `{{BENEFICIO_A_VALIDAR}}` | seção do selo, tabela da banca | idem |
 | `{{A_VALIDAR}}` | aviso na seção "Em caso de risco" (conteúdo em validação) | idem |
-| `{{LOGO_EQUATORIAL}}` | cabeçalho, rodapé, selo e página do selo (caixa tracejada "LOGO EQUATORIAL") | `LogoPh` em `src/components/ui.tsx` e `src/lib/badge-image.tsx` |
 | `{{URL_POLITICA_PRIVACIDADE}}` | rodapé | idem |
 | Áudios | 9 arquivos em `public/audio/` (ver `LEIA-ME.txt`) | gravar a partir das transcrições |
 

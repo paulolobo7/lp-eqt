@@ -4,8 +4,6 @@ import { PH } from "./placeholders";
 
 export const marca = {
   nome: "Vizinho de Alta Tensão",
-  logoRotulo: "LOGO EQUATORIAL",
-  logoRotuloCurto: "LOGO",
   descricao:
     "Programa educativo da Equatorial no WhatsApp para quem mora perto de linhas, subestações e equipamentos de alta tensão.",
 };

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { marca, selo as textos } from "@/content/site";
+import { selo as textos } from "@/content/site";
 import { dataBR } from "@/lib/texto";
 import type { Selo } from "@/lib/services";
 
@@ -12,6 +12,14 @@ export const TAMANHOS: Record<FormatoSelo, { width: number; height: number }> = 
 };
 
 const dirFontes = join(process.cwd(), "src/assets/fonts");
+// Logo oficial (versão branca, fundo escuro), embutido como data URI: o next/og não lê arquivos pelo caminho.
+const arquivoLogo = join(process.cwd(), "src/assets/logos/Logos Equatorial/EQTL3.SA_BIG.D.png");
+const LOGO = { largura: 1545, altura: 458 };
+let logo: Promise<string> | undefined;
+function carregarLogo() {
+  logo ??= readFile(arquivoLogo).then((b) => `data:image/png;base64,${b.toString("base64")}`);
+  return logo;
+}
 let fontes: Promise<{ name: string; data: Buffer; weight: 400 | 600 | 800; style: "normal" | "italic" }[]> | undefined;
 function carregarFontes() {
   fontes ??= Promise.all([
@@ -26,6 +34,8 @@ function carregarFontes() {
 export async function imagemDoSelo(s: Selo, formato: FormatoSelo, headers?: Record<string, string>) {
   const { width, height } = TAMANHOS[formato];
   const quadrado = formato === "square";
+  const logoSrc = await carregarLogo();
+  const logoAltura = quadrado ? 58 : 66;
   return new ImageResponse(
     (
       <div style={{ width, height, display: "flex", padding: 14, background: "linear-gradient(140deg,#5AC8FA,#8B5CF6 60%,#5AC8FA)", fontFamily: "Inter" }}>
@@ -44,9 +54,8 @@ export async function imagemDoSelo(s: Selo, formato: FormatoSelo, headers?: Reco
           }}
         >
           <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 20px", border: "2px dashed rgba(185,191,234,.55)", borderRadius: 14, fontSize: 22, fontWeight: 600, letterSpacing: 3, color: "#B8BEEA" }}>
-              {marca.logoRotulo}
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+            <img src={logoSrc} width={Math.round((logoAltura * LOGO.largura) / LOGO.altura)} height={logoAltura} />
             <div style={{ fontSize: 30, letterSpacing: 2, color: "#B8BEEA" }}>{s.codigo}</div>
           </div>
           <svg width={quadrado ? 220 : 330} height={quadrado ? 242 : 363} viewBox="0 0 120 132">

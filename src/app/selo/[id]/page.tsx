@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { PH } from "@/content/placeholders";
 import { cta, marca, selo as textosSelo, seloPagina } from "@/content/site";
 import { Icon } from "@/components/icon";
-import { LogoPh } from "@/components/ui";
+import { LogoEquatorial } from "@/components/ui";
 import { getServices } from "@/lib/services";
 import { dataBR } from "@/lib/texto";
 import { linkWhatsApp } from "@/lib/whatsapp";
@@ -78,7 +78,8 @@ export default function PaginaSelo(props: Props) {
   return (
     <main className="flex min-h-svh flex-col items-center gap-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(90,200,250,.14),transparent_70%),linear-gradient(180deg,#0B0E3A,#14185F)] px-5 pt-[calc(32px+env(safe-area-inset-top,0px))] pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
       <Link href="/" className="flex min-h-12 items-center gap-3 text-texto no-underline">
-        <LogoPh curto rotulo="LOGO" />
+        <LogoEquatorial decorativo className="h-7" />
+        <span aria-hidden="true" className="h-7 w-px flex-none bg-[rgba(185,191,234,.3)]" />
         <span className="titulo flex items-center gap-2 text-[17px]">
           <Icon nome="shieldBolt" tamanho={22} cor="#5AC8FA" />
           {marca.nome}

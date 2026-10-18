@@ -158,18 +158,6 @@ button,
   border: 1px solid rgb(139 92 246 / 0.6);
   white-space: nowrap;
 }
-.logo-ph {
-  display: inline-flex;
-  align-items: center;
-  height: 30px;
-  padding: 0 10px;
-  border: 1px dashed rgb(185 191 234 / 0.55);
-  border-radius: 8px;
-  font: 600 10px/1 var(--font-sans);
-  letter-spacing: 0.12em;
-  color: var(--color-texto-4);
-  white-space: nowrap;
-}
 
 /* ---------- Botões ---------- */
 .btn {

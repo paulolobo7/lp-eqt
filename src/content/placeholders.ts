@@ -8,6 +8,5 @@ export const PH = {
   beneficio: "{{BENEFICIO_A_VALIDAR}}",
   numero: "{{NUMERO_WHATSAPP}}",
   validar: "{{A_VALIDAR}}",
-  logo: "{{LOGO_EQUATORIAL}}",
   politica: "{{URL_POLITICA_PRIVACIDADE}}",
 } as const;

@@ -3,7 +3,7 @@ import { banca, convite, impacto, risco, rodape } from "@/content/site";
 import { BotaoOuvir } from "../audio";
 import { CtaWhatsApp } from "../app-provider";
 import { Icon, type NomeIcone } from "../icon";
-import { Kicker, LogoPh, Ph } from "../ui";
+import { Kicker, LogoEquatorial, Ph } from "../ui";
 import { Cena } from "../scene/cena";
 import { FalarComEquatorial } from "./falar";
 
@@ -176,7 +176,7 @@ export function Rodape() {
           </span>
         </div>
         <div className="flex flex-[1_1_280px] flex-col gap-2.5 text-[15px] leading-normal text-texto-4">
-          <span className="self-start"><LogoPh rotulo="LOGO EQUATORIAL" /></span>
+          <LogoEquatorial className="h-11 self-start" />
           <span>{rodape.hackathon}</span>
           <span>{rodape.aviso}</span>
         </div>
