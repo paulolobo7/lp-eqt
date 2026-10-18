@@ -10,8 +10,8 @@ export const EQUATORIAL_MA = {
   cidadePrincipal: "São Luís",
   telefones: {
     central24h: "116",
-    whatsappClara: "(98) 2055-7000",
-    whatsappNumeroLimpo: "559820557000",
+    whatsappClara: "(98) 2055-0116",
+    whatsappNumeroLimpo: "559820550116",
     bombeiros: "193",
     policiaMilitar: "190",
     defesaCivil: "199",
@@ -257,7 +257,7 @@ export const TOPICOS_SEGURANCA: TopicoSeguranca[] = [
       "   - Relato do que aconteceu (queda brusca, retorno de energia com oscilação, estalo);",
       "   - Marca, modelo exato e tempo aproximado de uso do eletrodoméstico.",
       "4. ONDE ABRIR O PEDIDO NA EQUATORIAL MARANHÃO:",
-      "   - WhatsApp da Clara: (98) 2055-7000 (digite 'Danos Elétricos' ou 'Ressarcimento');",
+      "   - WhatsApp da Clara: (98) 2055-0116 (digite 'Danos Elétricos' ou 'Ressarcimento');",
       "   - Site Oficial: www.equatorialenergia.com.br (Agência Web -> Solicitação de Ressarcimento);",
       "   - Aplicativo Equatorial Energia (Android e iOS);",
       "   - Central de Atendimento Gratuita: 116;",
@@ -276,7 +276,7 @@ export const TOPICOS_SEGURANCA: TopicoSeguranca[] = [
     detalhesTecnicos:
       "Surtos transitórios de tensão ocorrem devido a descargas atmosféricas (raios) atingindo a rede ou por manobras de chaveamento. O DPS (Dispositivo de Proteção contra Surtos) drena o excesso de voltagem diretamente para a terra, salvando a fiação e os circuitos dos eletrodomésticos.",
     canaisAcionamento: [
-      "WhatsApp Equatorial Clara: (98) 2055-7000",
+      "WhatsApp Equatorial Clara: (98) 2055-0116",
       "Telefone 116",
       "Site www.equatorialenergia.com.br",
       "App Equatorial Energia",
@@ -356,10 +356,10 @@ export const PERGUNTAS_QUIZ = [
     opcoes: [
       { id: "a", texto: "Mandar consertar imediatamente na oficina da esquina e depois cobrar da Equatorial." },
       { id: "b", texto: "Jogar o aparelho fora e comprar outro sem avisar ninguém." },
-      { id: "c", texto: "Não consertar antes da vistoria, ter a Conta Contrato em mãos e pedir ressarcimento em até 90 dias pelo WhatsApp Clara (98 2055-7000) ou 116.", correta: true },
+      { id: "c", texto: "Não consertar antes da vistoria, ter a Conta Contrato em mãos e pedir ressarcimento em até 90 dias pelo WhatsApp Clara (98 2055-0116) ou 116.", correta: true },
       { id: "d", texto: "Esperar 1 ano para fazer a reclamação na agência." },
     ],
     explicacao:
-      "Perfeito! Não conserte o aparelho antes da avaliação da Equatorial e dê entrada em até 90 dias pelo WhatsApp da Clara (98 2055-7000), 116, App ou site da Equatorial Maranhão.",
+      "Perfeito! Não conserte o aparelho antes da avaliação da Equatorial e dê entrada em até 90 dias pelo WhatsApp da Clara (98 2055-0116), 116, App ou site da Equatorial Maranhão.",
   },
 ];

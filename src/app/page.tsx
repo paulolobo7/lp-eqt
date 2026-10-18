@@ -23,7 +23,7 @@ export default async function Home() {
     svc.community.contagemPorBairro(),
     seloDeExemplo(),
   ]);
-  const numero = (process.env.WHATSAPP_NUMERO || "559820557000").replace(/\D/g, "");
+  const numero = (process.env.WHATSAPP_NUMERO || "559820550116").replace(/\D/g, "");
   const link = linkWhatsApp(numero, cta.mensagemPronta);
   const qrSvg = await QRCode.toString(link, { type: "svg", margin: 0, color: { dark: "#14185F", light: "#F5F7FF" }, errorCorrectionLevel: "M" });
 

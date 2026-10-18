@@ -86,7 +86,7 @@ Se o eletrodoméstico queimar em decorrência de distúrbio na rede elétrica da
    - Descrição detalhada do evento (ex: tempestade com raios, oscilação seguida de estrondo);
    - Relação dos equipamentos: tipo (ex: Televisor 55"), marca, modelo exato e ano aproximado de fabricação.
 4. **Canais Oficiais para Abrir o Pedido na Equatorial Maranhão:**
-   - **WhatsApp da Clara:** (98) 2055-7000 (digite "Danos Elétricos" ou "Ressarcimento");
+   - **WhatsApp da Clara:** (98) 2055-0116 (digite "Danos Elétricos" ou "Ressarcimento");
    - **Agência Web / Site:** www.equatorialenergia.com.br;
    - **Aplicativo Equatorial Energia** (disponível para Android e iOS);
    - **Central Telefônica 116** (gratuita, 24 horas);
@@ -100,7 +100,7 @@ Se o eletrodoméstico queimar em decorrência de distúrbio na rede elétrica da
 
 ### 4. Canais Oficiais de Contato — Equatorial Maranhão
 - **Central de Atendimento Telefônico:** 116 (Ligação gratuita, 24 horas)
-- **WhatsApp Oficial (Assistente Virtual Clara):** (98) 2055-7000
+- **WhatsApp Oficial (Assistente Virtual Clara):** (98) 2055-0116
 - **Site Oficial:** https://www.equatorialenergia.com.br
 - **Agência Virtual:** https://ma.equatorialenergia.com.br
 - **Emergência / Corpo de Bombeiros:** 193

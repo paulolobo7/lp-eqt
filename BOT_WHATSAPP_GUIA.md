@@ -21,7 +21,7 @@ Moradores que vivem nas proximidades de linhas de transmissão e subestações e
 ### A Solução:
 O **EquaBot — Vizinho de Alta Tensão**, um bot inteligente acessível diretamente pelo **WhatsApp** (onde a comunidade já está presente), que:
 1. **Acolhe e Educa:** Explica de forma humanizada, simples e empática o que fazer e o que NUNCA fazer em cada situação de risco.
-2. **Orienta sobre Eletrodomésticos e Ressarcimento:** Ensina medidas preventivas (DPS, filtros de linha, desligar da tomada em tempestades) e detalha o passo a passo completo de como solicitar o **Ressarcimento de Danos Elétricos na Equatorial Maranhão** (prazo de até 90 dias, não consertar antes da perícia, ter a Conta Contrato em mãos, acionar a Clara no WhatsApp `(98) 2055-7000` ou `116`).
+2. **Orienta sobre Eletrodomésticos e Ressarcimento:** Ensina medidas preventivas (DPS, filtros de linha, desligar da tomada em tempestades) e detalha o passo a passo completo de como solicitar o **Ressarcimento de Danos Elétricos na Equatorial Maranhão** (prazo de até 90 dias, não consertar antes da perícia, ter a Conta Contrato em mãos, acionar a Clara no WhatsApp `(98) 2055-0116` ou `116`).
 3. **Identifica a Região:** Reconhece bairros de São Luís e mapeia o nível de atenção da vizinhança.
 4. **Quiz e Selo Oficial:** Aplica um quiz interativo de 3 perguntas no próprio WhatsApp e emite o link do **Selo Digital Vizinho de Alta Tensão** assinado criptograficamente para compartilhamento no Status!
 

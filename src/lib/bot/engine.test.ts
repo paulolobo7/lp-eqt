@@ -35,7 +35,7 @@ describe("Bot Engine - Vizinho de Alta Tensão (Equatorial Maranhão)", () => {
     expect(textoCompleto).toContain("90");
     expect(textoCompleto).toContain("NÃO CONSERTE");
     expect(textoCompleto).toContain("Conta Contrato");
-    expect(textoCompleto).toContain("2055-7000");
+    expect(textoCompleto).toContain("2055-0116");
     expect(textoCompleto).toContain("116");
   });
 

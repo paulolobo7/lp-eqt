@@ -210,7 +210,7 @@ export async function processarMensagemBot(req: SolicitacaoMensagem): Promise<Re
   if (tLower.includes("telefone") || tLower.includes("canal") || tLower.includes("contato") || tLower.includes("numero") || tLower.includes("ligar")) {
     const canais = [
       `*Canais Oficiais da Equatorial Maranhão em São Luís:* 📱`,
-      `• *116*: Ligação gratuita 24h para emergências, falta de luz e cabos partidos.\n• *WhatsApp Clara*: (98) 2055-7000 para pedidos de ressarcimento, 2ª via e religação.\n• *App Equatorial Energia*: no Google Play e App Store.\n• *Site*: www.equatorialenergia.com.br`,
+      `• *116*: Ligação gratuita 24h para emergências, falta de luz e cabos partidos.\n• *WhatsApp Clara*: (98) 2055-0116 para pedidos de ressarcimento, 2ª via e religação.\n• *App Equatorial Energia*: no Google Play e App Store.\n• *Site*: www.equatorialenergia.com.br`,
       `Em casos de perigo iminente de vida ou incêndio na rede, acione também o Corpo de Bombeiros no *193*!`,
     ];
     sessao.historico.push(...canais.map((m) => ({ de: "bot" as const, texto: m })));
@@ -220,7 +220,7 @@ export async function processarMensagemBot(req: SolicitacaoMensagem): Promise<Re
   // 6. Resposta Geral Educativa
   const padrao = [
     `Entendido, vizinho! Para garantir a sua segurança e a da sua família em São Luís perto de linhas e subestações da Equatorial:`,
-    `1. *Cabos caídos*: Nunca toque e fique a mais de 10 metros de distância.\n2. *Pipas*: Jamais solte perto de fios e nunca tente resgatar pipa presa.\n3. *Eletrodomésticos*: Tire da tomada durante raios e peça ressarcimento em até 90 dias no 116 ou WhatsApp (98) 2055-7000 caso queimem por oscilação na rede.\n4. *Emergência*: Ligue imediatamente para o *116*.`,
+    `1. *Cabos caídos*: Nunca toque e fique a mais de 10 metros de distância.\n2. *Pipas*: Jamais solte perto de fios e nunca tente resgatar pipa presa.\n3. *Eletrodomésticos*: Tire da tomada durante raios e peça ressarcimento em até 90 dias no 116 ou WhatsApp (98) 2055-0116 caso queimem por oscilação na rede.\n4. *Emergência*: Ligue imediatamente para o *116*.`,
     `Você gostaria de fazer o nosso *Quiz do Vizinho Consciente* e ganhar o Selo Digital para o seu WhatsApp? Digite *Quiz*!`,
   ];
   sessao.historico.push(...padrao.map((m) => ({ de: "bot" as const, texto: m })));
