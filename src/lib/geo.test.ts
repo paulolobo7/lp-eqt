@@ -37,6 +37,12 @@ describe("distanciaAteSegmentoM", () => {
     const p = { lat: 0.001, lng: 0 };
     expect(distanciaAteSegmentoM(p, a, a)).toBeCloseTo(haversineM(p, a), 0);
   });
+
+  it("não devolve NaN nos polos", () => {
+    const d = distanciaAteSegmentoM({ lat: 90, lng: 0 }, a, b);
+    expect(Number.isFinite(d)).toBe(true);
+    expect(d).toBeGreaterThan(0);
+  });
 });
 
 describe("distanciaAteLinhaM", () => {

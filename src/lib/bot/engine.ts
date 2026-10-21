@@ -212,7 +212,10 @@ const SINAIS_DE_RISCO = [
   "fogo",
   "emergencia",
   "caiu",
-  "sem",
+  "sem luz",
+  "sem energia",
+  "falta de luz",
+  "falta de energia",
 ];
 
 function temSinalDeRisco(t: string): boolean {
@@ -220,7 +223,8 @@ function temSinalDeRisco(t: string): boolean {
 }
 
 function ehSaudacao(t: string): boolean {
-  return SAUDACOES.some((saudacao) => t === saudacao || (t.startsWith(saudacao) && t.length < 25));
+  const limpo = t.replace(/[.,!?;:]+/g, " ").replace(/\s+/g, " ").trim();
+  return SAUDACOES.some((saudacao) => limpo === saudacao || (limpo.startsWith(`${saudacao} `) && limpo.length < 25));
 }
 
 function boasVindas(): string[] {

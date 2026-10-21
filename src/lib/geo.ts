@@ -18,6 +18,9 @@ export function haversineM(a: Coordenada, b: Coordenada): number {
  */
 export function distanciaAteSegmentoM(p: Coordenada, a: Coordenada, b: Coordenada): number {
   const k = Math.cos(rad(p.lat));
+  // Nos polos a projeção equiretangular degenera; a distância às pontas é a
+  // aproximação segura para não devolver NaN/Infinity.
+  if (Math.abs(k) < 1e-6) return Math.min(haversineM(p, a), haversineM(p, b));
   const ax = a.lng * k, ay = a.lat;
   const bx = b.lng * k, by = b.lat;
   const px = p.lng * k, py = p.lat;

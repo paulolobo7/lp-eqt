@@ -269,6 +269,7 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
   };
 
   const reiniciar = (bairro?: BairroDemo) => {
+    setSelo(null);
     dispatch({ t: "reiniciar" });
     if (bairro) {
       dispatch({ t: "usuario", texto: bairro.nome });

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { cache } from "react";
 import { PH } from "@/content/placeholders";
 import { cta, marca, selo as textosSelo, seloPagina } from "@/content/site";
 import { Icon } from "@/components/icon";
@@ -13,12 +13,20 @@ import { linkWhatsApp, numeroWhatsAppValido } from "@/lib/whatsapp";
 
 type Props = { params: Promise<{ id: string }> };
 
+// O selo precisa ser validado antes do shell para um id inválido responder 404
+// (com streaming/PPR o status 200 já teria sido enviado).
+export const instant = false;
+
+// Evita ler/validar o selo duas vezes (metadata + página) na mesma requisição.
+const lerSelo = cache((id: string) => getServices().badge.ler(id));
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const selo = await getServices().badge.ler(id);
-  if (!selo) return { title: `${marca.nome}`, robots: { index: false } };
+  const selo = await lerSelo(id);
+  if (!selo) notFound();
+
   const titulo = seloPagina.titulo(selo.primeiroNome);
-  const img = (f: "status" | "square") => `/api/badge/${encodeURIComponent(id)}?format=${f}`;
+  const img = (formato: "status" | "square") => `/api/badge/${encodeURIComponent(id)}?format=${formato}`;
   return {
     title: titulo,
     description: seloPagina.descricao,
@@ -37,42 +45,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-async function Conteudo({ params }: Props) {
+export default async function PaginaSelo({ params }: Props) {
   const { id } = await params;
-  const selo = await getServices().badge.ler(id);
+  const selo = await lerSelo(id);
   if (!selo) notFound();
 
   const numeroSelo = process.env.WHATSAPP_NUMERO?.replace(/\D/g, "");
   const numeroValido = numeroWhatsAppValido(numeroSelo);
   const link = numeroValido ? linkWhatsApp(numeroSelo, cta.mensagemPronta) : "/#experimente";
 
-  return (
-    <div className="flex w-full max-w-[420px] flex-col items-center gap-8">
-      <h1 className="titulo m-0 text-center text-[clamp(28px,7vw,40px)] leading-[1.05]">{seloPagina.titulo(selo.primeiroNome)}</h1>
-      {/* PNG gerado pela própria rota no tamanho final: sem otimização extra. */}
-      <Image
-        unoptimized
-        priority
-        src={`/api/badge/${encodeURIComponent(id)}?format=status`}
-        width={1080}
-        height={1350}
-        alt={`${textosSelo.linha1} ${textosSelo.linha2}: ${selo.primeiroNome}, ${selo.bairro}, ${dataBR(selo.data)}, código ${selo.codigo}`}
-        className="h-auto w-full rounded-[28px] shadow-[0_40px_90px_rgba(3,5,30,.65),0_0_80px_rgba(90,200,250,.28)]"
-      />
-      <p className="m-0 text-center text-lg text-texto-3">{seloPagina.convite}</p>
-      <div className="flex flex-wrap justify-center gap-3">
-        <a href={link} className="btn btn-cta">
-          <Icon nome="chat" />
-          {cta.principal}
-        </a>
-        <Link href="/" className="btn !min-h-14">{seloPagina.voltar}</Link>
-      </div>
-      {!numeroValido && <p className="m-0 text-sm text-texto-5">wa.me/<span className="ph">{PH.numero}</span></p>}
-    </div>
-  );
-}
-
-export default function PaginaSelo(props: Props) {
   return (
     <main className="flex min-h-svh flex-col items-center gap-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(90,200,250,.14),transparent_70%),linear-gradient(180deg,#0B0E3A,#14185F)] px-5 pt-[calc(32px+env(safe-area-inset-top,0px))] pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
       <Link href="/" className="flex min-h-12 items-center gap-3 text-texto no-underline">
@@ -83,9 +64,29 @@ export default function PaginaSelo(props: Props) {
           {marca.nome}
         </span>
       </Link>
-      <Suspense fallback={<div className="aspect-[4/5] w-full max-w-[420px] rounded-[28px] bg-superficie" aria-busy="true" />}>
-        <Conteudo params={props.params} />
-      </Suspense>
+
+      <div className="flex w-full max-w-[420px] flex-col items-center gap-8">
+        <h1 className="titulo m-0 text-center text-[clamp(28px,7vw,40px)] leading-[1.05]">{seloPagina.titulo(selo.primeiroNome)}</h1>
+        {/* PNG gerado pela própria rota no tamanho final: sem otimização extra. */}
+        <Image
+          unoptimized
+          priority
+          src={`/api/badge/${encodeURIComponent(id)}?format=status`}
+          width={1080}
+          height={1350}
+          alt={`${textosSelo.linha1} ${textosSelo.linha2}: ${selo.primeiroNome}, ${selo.bairro}, ${dataBR(selo.data)}, código ${selo.codigo}`}
+          className="h-auto w-full rounded-[28px] shadow-[0_40px_90px_rgba(3,5,30,.65),0_0_80px_rgba(90,200,250,.28)]"
+        />
+        <p className="m-0 text-center text-lg text-texto-3">{seloPagina.convite}</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <a href={link} className="btn btn-cta">
+            <Icon nome="chat" />
+            {cta.principal}
+          </a>
+          <Link href="/" className="btn !min-h-14">{seloPagina.voltar}</Link>
+        </div>
+        {!numeroValido && <p className="m-0 text-sm text-texto-5">wa.me/<span className="ph">{PH.numero}</span></p>}
+      </div>
     </main>
   );
 }

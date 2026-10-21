@@ -91,6 +91,11 @@ describe("Bot Engine - Vizinho de Alta Tensão (Equatorial Maranhão)", () => {
     expect(res.mensagens.join(" ")).toContain("Arcos elétricos");
   });
 
+  it("trata 'oi, tudo bem?' como saudação", async () => {
+    const res = await processarMensagemBot({ mensagem: "oi, tudo bem?", sessao: "test-oi-pontuacao", telefone: "5598999990013" });
+    expect(res.mensagens[0]).toContain("EquaBot");
+  });
+
   it("não trata 'oi, caiu a luz' como saudação e orienta os canais", async () => {
     const res = await processarMensagemBot({
       mensagem: "oi, caiu a luz",

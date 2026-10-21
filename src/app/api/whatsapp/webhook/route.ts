@@ -59,6 +59,7 @@ const wahaPayloadSchema = z.object({
   payload: z.object({
     id: z.string().optional(),
     from: z.string().optional(),
+    to: z.string().optional(),
     source: z.string().optional(),
     body: z.string().optional(),
     hasMedia: z.boolean().optional(),
@@ -67,6 +68,7 @@ const wahaPayloadSchema = z.object({
       .object({
         mimetype: z.string().optional(),
         url: z.string().optional(),
+        filename: z.string().optional(),
       })
       .optional(),
     _data: z.any().optional(),

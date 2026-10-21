@@ -132,5 +132,37 @@ describe("POST /api/whatsapp/webhook (WAHA - fluxo bot.json)", () => {
     expect(json.processado).toBe(true);
     expect(json.motivo).toContain("atendente");
   });
+
+  it("usa o destinatário (to) para bloquear a conversa correta após o atendente falar", async () => {
+    const sessao = "handover-to";
+    const cliente = "5598999999999@c.us";
+    const atendente = {
+      event: "message",
+      session: sessao,
+      payload: {
+        from: "5598000000000@c.us",
+        to: cliente,
+        body: "Olá, sou o atendente humano.",
+        fromMe: true,
+      },
+    };
+    const primeira = await POST(new Request("http://x", { method: "POST", body: JSON.stringify(atendente) }));
+    expect((await primeira.json()).motivo).toContain("atendente");
+
+    const respostaCliente = await POST(
+      new Request("http://x", {
+        method: "POST",
+        body: JSON.stringify({
+          event: "message",
+          session: sessao,
+          payload: { id: "msg-4", from: cliente, body: "Oi", fromMe: false },
+        }),
+      }),
+    );
+    const json = await respostaCliente.json();
+    expect(json.processado).toBe(false);
+    expect(json.motivo).toContain("atendimento humano");
+    expect(json.mensagens).toHaveLength(0);
+  });
 });
 

@@ -34,7 +34,7 @@ O projeto implementa duas formas completas e interoperáveis de executar o bot:
 ```mermaid
 flowchart TD
     User([Morador no WhatsApp]) <--> WAHA[WAHA / WhatsApp Cloud API]
-    WAHA --> Webhook[Webhook: POST /webhook]
+    WAHA --> Webhook[Webhook: POST /api/whatsapp/webhook]
     
     subgraph Pipeline ["Pipeline Inteligente (fluxo bot.json & Next.js)"]
         Filtro[Filtro: Ignora API e Grupos]
@@ -98,20 +98,25 @@ docker run -it -d --name waha -p 3000:3000 -v waha_data:/app/.sessions devlikeap
 
 ## ⚡ 4. Como Rodar Diretamente pelo Next.js (Sem Dependências Externas)
 
-O repositório já inclui o motor em TypeScript embutido em [`src/lib/bot/`](./src/lib/bot), pronto para rodar sem necessidade de subir n8n ou Redis:
+O repositório já inclui o motor em TypeScript embutido em [`src/lib/bot/`](./src/lib/bot), pronto para rodar sem subir n8n. Nessa versão o buffer de 6,5 s, as sessões e o bloqueio de atendente ficam **em memória** (uma instância); para várias réplicas, use o fluxo n8n com Redis/Postgres ou troque esses pontos por Redis.
 
 ### Endpoints Disponíveis:
 
 | Rota | Método | Descrição |
 | --- | --- | --- |
 | `/api/whatsapp/webhook` | `GET` | Verificação de token da Meta Cloud API (`hub.verify_token`). |
-| `/api/whatsapp/webhook` | `POST` | Webhook universal: recebe tanto payloads do **WAHA** (do `fluxo bot.json`) quanto da **Meta WhatsApp Cloud API**. |
-| `/api/whatsapp/bot` | `POST` | Endpoint REST direto para testar conversas com o bot via JSON. |
+| `/api/whatsapp/webhook` | `POST` | Webhook universal: recebe payloads do **WAHA** e da **Meta WhatsApp Cloud API**. Em produção exige `WHATSAPP_WEBHOOK_SECRET` (header `x-webhook-token` ou `?token=`). |
+| `/api/whatsapp/bot` | `POST` | Endpoint REST direto para testar conversas com o bot via JSON. Tem limite de requisições por IP. |
+
+Áudio: com `OPENAI_API_KEY` e uma URL de mídia acessível, o handler baixa e transcreve a nota de voz com `whisper-1` (ou `OPENAI_TRANSCRIBE_MODEL`). Sem chave/URL, usa o fallback educativo. `WAHA_BUFFER_MS` controla o debounce (padrão 6500; `0` desliga).
 
 ### Exemplo de Chamada no Webhook WAHA (`POST /api/whatsapp/webhook`):
 ```bash
+# Em dev, sem WHATSAPP_WEBHOOK_SECRET, o token é opcional.
+# Em produção, configure WHATSAPP_WEBHOOK_SECRET e use ?token=... ou o header abaixo.
 curl -X POST http://localhost:3000/api/whatsapp/webhook \
   -H "Content-Type: application/json" \
+  -H "x-webhook-token: $WHATSAPP_WEBHOOK_SECRET" \
   -d '{
     "event": "message",
     "session": "default",
@@ -149,7 +154,7 @@ curl -X POST http://localhost:3000/api/whatsapp/bot \
    - O bot orienta: manter 10 a 15 metros, tensão de passo, nunca tocar nem usar madeira, ligar 116 e 193.
 3. **Eletrodomésticos Queimados & Ressarcimento:**
    - Digite: *"minha geladeira queimou com um raio durante a chuva, como peço ressarcimento?"*
-   - O bot orienta: prazo de 90 dias (ANEEL), NÃO consertar nem jogar fora antes da vistoria, ter Conta Contrato, canais Clara (98 2055-7000) e 116.
+   - O bot orienta: prazo de 90 dias (ANEEL), NÃO consertar nem jogar fora antes da vistoria, ter Conta Contrato, canais Clara (98 2055-0116) e 116.
 4. **Pipas na Rede Elétrica:**
    - Digite: *"uma pipa enroscou no fio do poste, posso tirar?"*
    - O bot orienta: perigo fatal, cerol/linha chilena, deixar a pipa lá e nunca usar varas nem subir em postes.

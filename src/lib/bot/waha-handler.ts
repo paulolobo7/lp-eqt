@@ -6,6 +6,11 @@ import type { WahaPayload } from "./types";
 const TEXTO_AUDIO_FALLBACK =
   "[Mensagem de voz recebida: Morador perguntando sobre segurança elétrica e cuidados com eletrodomésticos]";
 
+/** Remove o sufixo do WhatsApp para a mesma pessoa casar entre entrada e saída. */
+function normalizarContato(contato: string): string {
+  return contato.replace(/@(c\.us|s\.whatsapp\.net)$/i, "");
+}
+
 export type ResultadoWaha = {
   processado: boolean;
   motivo?: string;
@@ -38,7 +43,7 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
   const session = body.session || "default";
   const payload = body.payload;
 
-  if (body.event !== "message") {
+  if (body.event !== "message" && body.event !== "message.any") {
     return { processado: false, motivo: `Evento ignorado: ${body.event}`, mensagens: [], session, phone: "" };
   }
 
@@ -67,18 +72,19 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
   // Em mensagens de saída, `from` costuma ser o número da própria sessão;
   // a conversa com o cliente está em `to`/`Info.Chat`.
   if (fromMe) {
-    const conversa = payload.to || payload._data?.Info?.Chat || phone;
-    ativarBloqueioHumano(`${session}:${conversa}`);
+    const contato = normalizarContato(payload.to || payload._data?.Info?.Chat || phone);
+    ativarBloqueioHumano(`${session}:${contato}`);
     return {
       processado: true,
       motivo: "Mensagem do atendente registrada: IA pausada por 50 minutos",
       mensagens: [],
       session,
-      phone: conversa,
+      phone: contato,
     };
   }
 
   const conversa = phone;
+  const contatoSessao = normalizarContato(conversa);
 
   // 4. Áudio: tenta transcrever; sem chave/URL, usa o fallback educativo.
   let textoMensagem = payload.body || "";
@@ -100,7 +106,7 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
   }
 
   // 5. Buffer de mensagens picotadas (padrão 6,5s; WAHA_BUFFER_MS=0 desliga).
-  const agrupada = await agrupar(`${session}:${conversa}`, textoMensagem);
+  const agrupada = await agrupar(`${session}:${contatoSessao}`, textoMensagem);
   if (!agrupada.lider) {
     return { processado: false, motivo: "Mensagem agrupada com a anterior", mensagens: [], session, phone };
   }
@@ -108,7 +114,7 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
   // 6. Execução do agente com a base de conhecimento.
   const resposta = await processarMensagemBot({
     mensagem: agrupada.texto,
-    telefone: conversa,
+    telefone: contatoSessao,
     sessao: session,
     nome: pushName,
     eAudio: isAudio,

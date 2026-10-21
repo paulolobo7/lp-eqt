@@ -33,4 +33,8 @@ describe("dataBR", () => {
   it("formata AAAA-MM-DD como DD/MM/AAAA", () => {
     expect(dataBR("2026-10-15")).toBe("15/10/2026");
   });
+
+  it("devolve a entrada quando não está no formato ISO", () => {
+    expect(dataBR("2026-10")).toBe("2026-10");
+  });
 });

@@ -26,8 +26,9 @@ export function primeiroNome(entrada: string): string {
   return minusculo.charAt(0).toLocaleUpperCase("pt-BR") + minusculo.slice(1);
 }
 
-/** "2026-10-15" -> "15/10/2026" */
+/** "2026-10-15" -> "15/10/2026" (devolve a entrada se não estiver no formato ISO). */
 export function dataBR(iso: string): string {
   const [a, m, d] = iso.split("-");
+  if (!a || !m || !d) return iso;
   return `${d}/${m}/${a}`;
 }

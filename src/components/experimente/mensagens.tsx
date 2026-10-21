@@ -99,7 +99,7 @@ export function Mensagem({ m, aoResponder }: { m: Msg; aoResponder: (msgId: numb
             {m.pergunta.pergunta}
           </strong>
           <div className="flex flex-col gap-2" role="group" aria-labelledby={`q-${m.id}`}>
-            {m.pergunta.opcoes.map((o, k) => {
+            {m.pergunta.opcoes.map((o) => {
               const escolhida = m.respondida === o.id;
               const cor = escolhida ? (m.correta ? "#22C55E" : "#FFB020") : "#3A41A0";
               return (
@@ -116,7 +116,7 @@ export function Mensagem({ m, aoResponder }: { m: Msg; aoResponder: (msgId: numb
                   }}
                 >
                   <span className="titulo grid h-[30px] w-[30px] flex-none place-items-center rounded-[10px] bg-[rgba(154,163,240,.16)] text-sm">
-                    {"ABC"[k]}
+                    {o.id.toUpperCase()}
                   </span>
                   <span className="flex-1">{o.texto}</span>
                   {escolhida && (
