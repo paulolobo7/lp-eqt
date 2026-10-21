@@ -25,7 +25,7 @@ pnpm dev                     # http://localhost:3000
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | gera os tipos de rota do Next e roda TypeScript estrito |
 | `pnpm test` | testes unitários e de rota (Vitest) |
-| `pnpm e2e` | Playwright: fluxo completo em 390×844 e 1440×900 (sobe `pnpm start` na porta 3200; rode `BADGE_SECRET=... pnpm build` antes) |
+| `pnpm e2e` | Playwright: fluxo completo em 390×844 e 1440×900. O script builda com o ambiente de teste e sobe `pnpm start` na porta 3200 |
 | `pnpm shots` | só as capturas das seções, salvas em `docs/capturas/` |
 
 O Playwright usa o Chromium dele; se ainda não tiver, rode `pnpm exec playwright install chromium`.
