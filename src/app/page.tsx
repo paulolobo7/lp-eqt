@@ -14,7 +14,7 @@ import { Vizinhanca } from "@/components/secoes/vizinhanca";
 import { Kicker, Ph } from "@/components/ui";
 import { getServices } from "@/lib/services";
 import { seloDeExemplo } from "@/lib/site";
-import { linkWhatsApp, numeroWhatsAppValido } from "@/lib/whatsapp";
+import { formatarNumeroWhatsApp, linkWhatsApp, numeroWhatsAppValido } from "@/lib/whatsapp";
 
 export default async function Home() {
   const svc = getServices();
@@ -26,19 +26,19 @@ export default async function Home() {
   const numeroBruto = process.env.WHATSAPP_NUMERO?.replace(/\D/g, "");
   const valido = numeroWhatsAppValido(numeroBruto);
   const link = valido ? linkWhatsApp(numeroBruto, cta.mensagemPronta) : "#como";
-  const qrSvg = await QRCode.toString(valido ? link : "http://localhost:3000#como", {
-    type: "svg",
-    margin: 0,
-    color: { dark: "#14185F", light: "#F5F7FF" },
-    errorCorrectionLevel: "M",
-  });
+  // Sem número configurado não geramos um QR para localhost: ele só levaria a um link quebrado.
+  const qrSvg = valido
+    ? await QRCode.toString(link, {
+        type: "svg",
+        margin: 0,
+        color: { dark: "#14185F", light: "#F5F7FF" },
+        errorCorrectionLevel: "M",
+      })
+    : "";
 
   const rotuloFormatado = valido && numeroBruto ? (
     <span className="inline-flex items-center gap-1.5 font-mono font-medium text-brand-celeste">
-      +{numeroBruto.slice(0, 2)} ({numeroBruto.slice(2, 4)}) {numeroBruto.length === 13 ? `${numeroBruto.slice(4, 9)}-${numeroBruto.slice(9)}` : `${numeroBruto.slice(4, 8)}-${numeroBruto.slice(8)}`}
-      <span className="text-[11px] font-sans bg-[rgba(90,200,250,.15)] text-brand-celeste px-2 py-0.5 rounded-full border border-[rgba(90,200,250,.25)]">
-        Bot de Testes
-      </span>
+      {formatarNumeroWhatsApp(numeroBruto)}
     </span>
   ) : (
     <Ph>{PH.numero}</Ph>

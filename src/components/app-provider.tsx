@@ -45,20 +45,26 @@ export function AppProvider({
   const [qrAberto, setQrAberto] = useState(false);
   const [selo, setSelo] = useState<SeloObtido | null>(null);
 
-  const aoClicarCta = useCallback((e: MouseEvent<HTMLAnchorElement>) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-    const desktop = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 820px)").matches;
-    if (desktop) {
-      e.preventDefault();
-      setQrAberto(true);
-      return;
-    }
-    const el = document.getElementById("como");
-    if (el) {
-      e.preventDefault();
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
+  const aoClicarCta = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const desktop = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 820px)").matches;
+      if (desktop) {
+        e.preventDefault();
+        setQrAberto(true);
+        return;
+      }
+      // No celular, um link wa.me válido segue direto. Sem número, leva ao simulador.
+      if (!linkWhatsApp.startsWith("https://wa.me/")) {
+        const el = document.getElementById("como");
+        if (el) {
+          e.preventDefault();
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    },
+    [linkWhatsApp],
+  );
 
   const valor = useMemo(() => ({ linkWhatsApp, aoClicarCta, selo, setSelo }), [linkWhatsApp, aoClicarCta, selo]);
 
@@ -77,12 +83,19 @@ export function AppProvider({
                 </Dialog.Close>
               </div>
               <Dialog.Description className="m-0 text-texto-2">{cta.qrTextoDesktop}</Dialog.Description>
-              <div
-                className="self-center rounded-[20px] bg-texto p-4 [&_svg]:block [&_svg]:h-[200px] [&_svg]:w-[200px]"
-                role="img"
-                aria-label={cta.qrRotulo}
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-              />
+              {qrSvg ? (
+                <div
+                  className="self-center rounded-[20px] bg-texto p-4 [&_svg]:block [&_svg]:h-[200px] [&_svg]:w-[200px]"
+                  role="img"
+                  aria-label={cta.qrRotulo}
+                  dangerouslySetInnerHTML={{ __html: qrSvg }}
+                />
+              ) : (
+                <p className="m-0 rounded-[16px] border border-[rgba(185,191,234,.22)] bg-[rgba(154,163,240,.08)] p-3 text-center text-sm text-texto-3">
+                  Defina <span className="font-mono text-brand-celeste">WHATSAPP_NUMERO</span> no{" "}
+                  <span className="font-mono text-brand-celeste">.env.local</span> para gerar o QR code.
+                </p>
+              )}
               <div className="flex flex-col gap-2.5 w-full">
                 <button
                   type="button"

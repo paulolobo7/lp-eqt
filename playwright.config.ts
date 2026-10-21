@@ -22,6 +22,6 @@ export default defineConfig({
     url: `http://localhost:${PORTA}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: { USE_MOCKS: "true", BADGE_SECRET: "segredo-e2e", WHATSAPP_NUMERO: "", NEXT_PUBLIC_SITE_URL: `http://localhost:${PORTA}` },
+    env: { USE_MOCKS: "true", BADGE_SECRET: "segredo-e2e", WHATSAPP_NUMERO: "5598999999999", WAHA_BUFFER_MS: "0", NEXT_PUBLIC_SITE_URL: `http://localhost:${PORTA}` },
   },
 });

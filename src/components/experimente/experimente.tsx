@@ -42,6 +42,19 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
   const [nome, setNome] = useState("");
   const [textoLivre, setTextoLivre] = useState("");
   const [enviandoLivre, setEnviandoLivre] = useState(false);
+  const sessaoRef = useRef("");
+
+  // Cada aba tem sua própria sessão no bot: sem isso, todos os visitantes
+  // compartilhariam o mesmo estado de quiz no servidor.
+  useEffect(() => {
+    const chave = "vat-sessao";
+    let id = sessionStorage.getItem(chave);
+    if (!id) {
+      id = globalThis.crypto?.randomUUID?.() ?? `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem(chave, id);
+    }
+    sessaoRef.current = id;
+  }, []);
 
   const sugestoesRapidas = [
     { rotulo: "⚡ Cabo caído", texto: "O que fazer se tiver um cabo caído no chão da rua?" },
@@ -97,7 +110,7 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
     try {
       const ps = e.perguntas ?? (await api.perguntas());
       if (!e.perguntas) dispatch({ t: "perguntas", perguntas: ps });
-      dispatch({ t: "falar", itens: [{ k: "quiz", indice, pergunta: ps[indice] }], passo: 5 });
+      dispatch({ t: "falar", itens: [{ k: "quiz", indice, pergunta: ps[indice], total: ps.length }], passo: 5 });
     } catch {
       dispatch({ t: "falar", itens: [{ k: "bot", texto: chat.erroServico }], respostas: [{ rotulo: chat.respostas.comecarQuiz, icone: "check", acao: { t: "comecar-quiz" } }] });
     }
@@ -105,11 +118,8 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
 
   const iniciarQuizVisual = useCallback(() => {
     dispatch({ t: "usuario", texto: chat.respostas.comecarQuiz });
-    if (!e.bairro) {
-      dispatch({ t: "resultado", bairro: { id: "vila-esperanca", nome: "Vila Esperança" }, nivel: "alto" });
-    }
     void mostrarPergunta(0);
-  }, [e.bairro, mostrarPergunta]);
+  }, [mostrarPergunta]);
 
   useEffect(() => {
     const handler = () => {
@@ -137,7 +147,7 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
       const res = await fetch("/api/whatsapp/bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensagem: msg, eAudio }),
+        body: JSON.stringify({ mensagem: msg, eAudio, sessao: sessaoRef.current || undefined }),
       });
       if (res.ok) {
         const json = await res.json();
@@ -215,9 +225,10 @@ export function Experimente({ bairros }: { bairros: BairroDemo[] }) {
         });
       }
       dispatch({ t: "acerto", resposta });
-      if (m.indice < 2) {
+      const total = e.perguntas?.length ?? m.total ?? 3;
+      if (m.indice < total - 1) {
         const ps = e.perguntas!;
-        return dispatch({ t: "falar", itens: [{ k: "feedback", ok: true, texto: res.explicacao }, { k: "quiz", indice: m.indice + 1, pergunta: ps[m.indice + 1] }] });
+        return dispatch({ t: "falar", itens: [{ k: "feedback", ok: true, texto: res.explicacao }, { k: "quiz", indice: m.indice + 1, pergunta: ps[m.indice + 1], total }] });
       }
       dispatch({ t: "falar", itens: [{ k: "feedback", ok: true, texto: res.explicacao }, { k: "bot", texto: chat.pedirNome }] });
       dispatch({ t: "entrada-nome", aberta: true });

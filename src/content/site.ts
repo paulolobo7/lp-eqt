@@ -132,7 +132,7 @@ export const chat = {
   localizacaoFalhou:
     "Não consegui pegar sua localização. Sem problema: escolha o seu bairro.",
   erroServico: "Não consegui responder agora. Tente de novo em instantes.",
-  cuidadosIntro: "Veja 3 cuidados para você e sua família.",
+  cuidadosIntro: "Veja os cuidados para você e sua família.",
   imagens: [
     { icone: "kite", legenda: "Pipa só longe da rede. Se prender, deixe lá e avise." },
     { icone: "cable", legenda: "Cabo no chão: não encoste e afaste todo mundo." },
@@ -145,7 +145,7 @@ export const chat = {
       "Não solte pipa perto da rede. Se a pipa prender, deixe lá. Cabo no chão pode estar energizado: não encoste, afaste as pessoas e avise a Equatorial.",
   },
   convitesQuiz: "Agora, 3 perguntas rápidas. Acerte as 3 e ganhe seu selo.",
-  perguntaDe: (n: number) => `Pergunta ${n} de 3`,
+  perguntaDe: (n: number, total = 3) => `Pergunta ${n} de ${total}`,
   ouvir: "Ouvir",
   ouvirPergunta: "Ouvir a pergunta",
   tocando: "Tocando",

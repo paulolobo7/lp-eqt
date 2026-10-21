@@ -24,7 +24,7 @@ export type MsgSemId =
   | ({ k: "audio" } & Audio)
   | { k: "pedido-loc" }
   | { k: "resultado"; resultado: ResultadoProximidade; rotulo: string }
-  | { k: "quiz"; indice: number; pergunta: PerguntaPublica; respondida?: string; correta?: boolean }
+  | { k: "quiz"; indice: number; pergunta: PerguntaPublica; total?: number; respondida?: string; correta?: boolean }
   | { k: "feedback"; ok: boolean; texto: string }
   | { k: "selo"; selo: SeloObtido };
 

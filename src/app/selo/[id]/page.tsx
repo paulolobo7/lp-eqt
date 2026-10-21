@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PH } from "@/content/placeholders";
 import { cta, marca, selo as textosSelo, seloPagina } from "@/content/site";
@@ -8,7 +9,7 @@ import { Icon } from "@/components/icon";
 import { LogoEquatorial } from "@/components/ui";
 import { getServices } from "@/lib/services";
 import { dataBR } from "@/lib/texto";
-import { linkWhatsApp } from "@/lib/whatsapp";
+import { linkWhatsApp, numeroWhatsAppValido } from "@/lib/whatsapp";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -39,16 +40,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 async function Conteudo({ params }: Props) {
   const { id } = await params;
   const selo = await getServices().badge.ler(id);
+  if (!selo) notFound();
+
   const numeroSelo = process.env.WHATSAPP_NUMERO?.replace(/\D/g, "");
-  const link = linkWhatsApp(numeroSelo, cta.mensagemPronta);
-  if (!selo) {
-    return (
-      <div className="flex flex-col items-center gap-6 text-center">
-        <h1 className="m-0 text-lg font-normal text-texto-3">{seloPagina.invalido}</h1>
-        <Link href="/" className="btn btn-cta">{seloPagina.voltar}</Link>
-      </div>
-    );
-  }
+  const numeroValido = numeroWhatsAppValido(numeroSelo);
+  const link = numeroValido ? linkWhatsApp(numeroSelo, cta.mensagemPronta) : "/#experimente";
+
   return (
     <div className="flex w-full max-w-[420px] flex-col items-center gap-8">
       <h1 className="titulo m-0 text-center text-[clamp(28px,7vw,40px)] leading-[1.05]">{seloPagina.titulo(selo.primeiroNome)}</h1>
@@ -70,7 +67,7 @@ async function Conteudo({ params }: Props) {
         </a>
         <Link href="/" className="btn !min-h-14">{seloPagina.voltar}</Link>
       </div>
-      {link.includes(PH.numero) && <p className="m-0 text-sm text-texto-5">wa.me/<span className="ph">{PH.numero}</span></p>}
+      {!numeroValido && <p className="m-0 text-sm text-texto-5">wa.me/<span className="ph">{PH.numero}</span></p>}
     </div>
   );
 }

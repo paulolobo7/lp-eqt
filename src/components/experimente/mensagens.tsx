@@ -92,8 +92,8 @@ export function Mensagem({ m, aoResponder }: { m: Msg; aoResponder: (msgId: numb
       return (
         <div className="flex flex-col gap-2.5 self-stretch rounded-[20px] border border-borda bg-superficie p-3.5" data-testid={`quiz-${m.indice + 1}`}>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[12.5px] uppercase tracking-[.1em] text-[#9FE0FF]">{chat.perguntaDe(m.indice + 1)}</span>
-            <BotaoOuvir src={m.pergunta.audio.src} rotulo={chat.ouvir} ariaTitulo={chat.perguntaDe(m.indice + 1)} compacto />
+            <span className="text-[12.5px] uppercase tracking-[.1em] text-[#9FE0FF]">{chat.perguntaDe(m.indice + 1, m.total)}</span>
+            <BotaoOuvir src={m.pergunta.audio.src} rotulo={chat.ouvir} ariaTitulo={chat.perguntaDe(m.indice + 1, m.total)} compacto />
           </div>
           <strong className="text-[17px] font-semibold leading-[1.35]" id={`q-${m.id}`}>
             {m.pergunta.pergunta}

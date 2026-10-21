@@ -171,7 +171,7 @@ export function Rodape() {
           </h2>
           <p className="m-0 max-w-[620px] text-[15.5px] leading-[1.55] text-texto-3">{rodape.privacidadeTexto}</p>
           <span className="inline-flex min-h-11 flex-wrap items-center gap-2 text-[15px]">
-            <span className="text-ciano underline underline-offset-[3px]">{rodape.politica}</span>
+            <span className="text-texto-2">{rodape.politica}</span>
             <Ph>{PH.politica}</Ph>
           </span>
         </div>
