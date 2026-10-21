@@ -1,11 +1,10 @@
 import { ativarBloqueioHumano, formatarMensagensWhatsApp, processarMensagemBot } from "./engine";
+import { agrupar } from "./buffer";
+import { transcreverAudio } from "./transcricao";
 import type { WahaPayload } from "./types";
 
-/**
- * Buffer temporário de mensagens picotadas (replica o nó 'Buffer de Mensagens Picotadas' do fluxo bot.json)
- * Agrupa mensagens rápidas enviadas pelo usuário em até 6.5 segundos.
- */
-const bufferMensagens = new Map<string, { textos: string[]; timer?: NodeJS.Timeout }>();
+const TEXTO_AUDIO_FALLBACK =
+  "[Mensagem de voz recebida: Morador perguntando sobre segurança elétrica e cuidados com eletrodomésticos]";
 
 export type ResultadoWaha = {
   processado: boolean;
@@ -15,12 +14,33 @@ export type ResultadoWaha = {
   phone: string;
 };
 
+async function enviarWaha(wahaUrl: string, wahaKey: string | undefined, caminho: string, corpo: unknown): Promise<boolean> {
+  try {
+    const res = await fetch(`${wahaUrl}${caminho}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(wahaKey ? { "X-Api-Key": wahaKey } : {}) },
+      body: JSON.stringify(corpo),
+      signal: AbortSignal.timeout(8_000),
+    });
+    return res.ok;
+  } catch {
+    // WAHA local pode não estar rodando; o webhook ainda devolve as mensagens.
+    return false;
+  }
+}
+
 /**
- * Processador do Webhook WAHA, aplicando exatamente a mesma lógica do fluxo bot.json (n8n).
+ * Processador do Webhook WAHA, seguindo o fluxo do bot.json (n8n):
+ * ignora API/grupos, pausa em atendimento humano, transcreve áudio, agrupa
+ * mensagens picotadas e formata a saída para o WhatsApp.
  */
 export async function processarWebhookWaha(body: WahaPayload): Promise<ResultadoWaha> {
   const session = body.session || "default";
   const payload = body.payload;
+
+  if (body.event !== "message") {
+    return { processado: false, motivo: `Evento ignorado: ${body.event}`, mensagens: [], session, phone: "" };
+  }
 
   if (!payload) {
     return { processado: false, motivo: "Payload ausente", mensagens: [], session, phone: "" };
@@ -30,35 +50,37 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
   const source = payload.source || "";
   const isGroup = payload._data?.Info?.IsGroup === true || phone.includes("@g.us");
   const fromMe = payload.fromMe === true;
-  const pushName = payload._data?.Info?.PushName || "Vizinho";
+  const pushName = payload._data?.Info?.PushName || undefined;
   const messageType = payload._data?.Info?.Type || (payload.hasMedia ? "media" : "text");
 
-  // 1. Nó 'Ignorar API': se a mensagem veio da API, ignora para evitar loop
+  // 1. Nó 'Ignorar API': se a mensagem veio da API, ignora para evitar loop.
   if (source === "api") {
     return { processado: false, motivo: "Ignorado: mensagem originada da API", mensagens: [], session, phone };
   }
 
-  // 2. Nó 'Ignorar Grupos': só atende conversas individuais no WhatsApp
+  // 2. Nó 'Ignorar Grupos': só atende conversas individuais.
   if (isGroup) {
     return { processado: false, motivo: "Ignorado: mensagem de grupo", mensagens: [], session, phone };
   }
 
-  const chaveSessao = `${session}:${phone}`;
-
-  // 3. Nó 'FromMe?': se a mensagem partiu do próprio número da Equatorial (atendente humano falando no WhatsApp)
+  // 3. Nó 'FromMe?': atendente humano falando no WhatsApp pausa a IA.
+  // Em mensagens de saída, `from` costuma ser o número da própria sessão;
+  // a conversa com o cliente está em `to`/`Info.Chat`.
   if (fromMe) {
-    // Ativa a chave de bloqueio de 50 minutos (3000 segundos) para não haver colisão da IA com o atendente
-    ativarBloqueioHumano(chaveSessao);
+    const conversa = payload.to || payload._data?.Info?.Chat || phone;
+    ativarBloqueioHumano(`${session}:${conversa}`);
     return {
       processado: true,
       motivo: "Mensagem do atendente registrada: IA pausada por 50 minutos",
       mensagens: [],
       session,
-      phone,
+      phone: conversa,
     };
   }
 
-  // 4. Tratamento de Mídia / Áudio (replica 'Dados Media' + 'Baixar Audio' + 'Transcribe a recording')
+  const conversa = phone;
+
+  // 4. Áudio: tenta transcrever; sem chave/URL, usa o fallback educativo.
   let textoMensagem = payload.body || "";
   const isAudio =
     messageType === "audio" ||
@@ -66,21 +88,27 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
     (payload.hasMedia && payload.media?.mimetype?.includes("audio"));
 
   if (isAudio) {
-    // Em produção com n8n/WAHA, o áudio é baixado da URL e enviado para o Whisper da OpenAI.
-    // Aqui incluímos o suporte tanto para a transcrição real quanto para fallback educativo caso não haja URL.
-    if (!textoMensagem) {
-      textoMensagem = "[Mensagem de voz recebida: Morador perguntando sobre segurança elétrica e cuidados com eletrodomésticos]";
-    }
+    const transcricao = payload.media?.url
+      ? await transcreverAudio(payload.media.url, { nomeArquivo: payload.media.filename })
+      : null;
+    textoMensagem = (transcricao || textoMensagem).trim();
+    if (!textoMensagem) textoMensagem = TEXTO_AUDIO_FALLBACK;
   }
 
   if (!textoMensagem.trim()) {
     return { processado: false, motivo: "Mensagem vazia", mensagens: [], session, phone };
   }
 
-  // 5. Execução do Agente de IA com a Base de Conhecimento Equatorial Maranhão
+  // 5. Buffer de mensagens picotadas (padrão 6,5s; WAHA_BUFFER_MS=0 desliga).
+  const agrupada = await agrupar(`${session}:${conversa}`, textoMensagem);
+  if (!agrupada.lider) {
+    return { processado: false, motivo: "Mensagem agrupada com a anterior", mensagens: [], session, phone };
+  }
+
+  // 6. Execução do agente com a base de conhecimento.
   const resposta = await processarMensagemBot({
-    mensagem: textoMensagem,
-    telefone: phone,
+    mensagem: agrupada.texto,
+    telefone: conversa,
     sessao: session,
     nome: pushName,
     eAudio: isAudio,
@@ -97,39 +125,18 @@ export async function processarWebhookWaha(body: WahaPayload): Promise<Resultado
     };
   }
 
-  // 6. Nó 'Output Parser': formata e divide a mensagem de forma humanizada para WhatsApp
-  const mensagensHumanizadas = resposta.mensagens.flatMap((m) => formatarMensagensWhatsApp(m));
+  // 7. Output parser: formata e divide de forma humanizada para WhatsApp.
+  const mensagensHumanizadas = resposta.mensagens.flatMap((mensagem) => formatarMensagensWhatsApp(mensagem));
 
-  // 7. Envio para a API WAHA (se configurada via variável de ambiente)
+  // 8. Envio via WAHA (se configurado).
   const wahaUrl = process.env.WAHA_API_URL;
   const wahaKey = process.env.WAHA_API_KEY;
 
-  if (wahaUrl && phone) {
-    try {
-      // Nó 'Vizualizar': marca como lido
-      await fetch(`${wahaUrl}/api/sendSeen`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(wahaKey ? { "X-Api-Key": wahaKey } : {}) },
-        body: JSON.stringify({ session, chatId: phone }),
-      }).catch(() => null);
-
-      // Nó 'Digitar': ativa o indicador de digitação
-      await fetch(`${wahaUrl}/api/startTyping`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(wahaKey ? { "X-Api-Key": wahaKey } : {}) },
-        body: JSON.stringify({ session, chatId: phone }),
-      }).catch(() => null);
-
-      // Nó 'Responder': envia cada mensagem dividida
-      for (const msg of mensagensHumanizadas) {
-        await fetch(`${wahaUrl}/api/sendText`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(wahaKey ? { "X-Api-Key": wahaKey } : {}) },
-          body: JSON.stringify({ session, chatId: phone, text: msg }),
-        }).catch(() => null);
-      }
-    } catch {
-      // Ignora falhas de conexão de rede caso o WAHA não esteja em execução local
+  if (wahaUrl && conversa) {
+    await enviarWaha(wahaUrl, wahaKey, "/api/sendSeen", { session, chatId: conversa });
+    await enviarWaha(wahaUrl, wahaKey, "/api/startTyping", { session, chatId: conversa });
+    for (const mensagem of mensagensHumanizadas) {
+      await enviarWaha(wahaUrl, wahaKey, "/api/sendText", { session, chatId: conversa, text: mensagem });
     }
   }
 

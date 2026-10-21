@@ -1,4 +1,5 @@
 import { lerJson, semCache } from "@/lib/http";
+import { limitar } from "@/lib/rate-limit";
 import { consultaProximidadeSchema, respostaDeErro } from "@/lib/schemas";
 import { getServices } from "@/lib/services";
 
@@ -7,6 +8,9 @@ import { getServices } from "@/lib/services";
  * As coordenadas são usadas só no cálculo e nunca são registradas nem devolvidas.
  */
 export async function POST(request: Request) {
+  const bloqueio = limitar(request, "proximity", { max: 60, janelaMs: 60_000 });
+  if (bloqueio) return bloqueio;
+
   const corpo = await lerJson(request);
   if (!corpo.ok) return corpo.resposta;
   const consulta = consultaProximidadeSchema.safeParse(corpo.dados);

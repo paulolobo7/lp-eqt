@@ -18,4 +18,10 @@ describe("getServices", () => {
     vi.stubEnv("USE_MOCKS", "false");
     expect(getServices().proximity.constructor.name).toBe("EquatorialProximityService");
   });
+
+  it("exige BADGE_SECRET em produção", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BADGE_SECRET", "");
+    expect(() => getServices()).toThrow(/BADGE_SECRET/);
+  });
 });

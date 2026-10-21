@@ -30,17 +30,43 @@ describe("POST /api/whatsapp/webhook (eco simulado)", () => {
     entry: [{ changes: [{ value: { messages: [{ from: "5598000000000", type: "text", text: { body: "Oi" } }] } }] }],
   };
 
-  it("ecoa as mensagens de texto sem devolver o telefone", async () => {
+  it("ecoa as mensagens de texto e devolve a resposta do bot", async () => {
     const res = await POST(new Request("http://x", { method: "POST", body: JSON.stringify(payload) }));
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual({ simulacao: true, respostas: [{ eco: "Oi" }] });
+    expect(json.simulacao).toBe(true);
+    expect(json.respostas).toEqual([{ eco: "Oi" }]);
+    expect(json.mensagens.length).toBeGreaterThan(0);
     expect(JSON.stringify(json)).not.toContain("5598000000000");
   });
 
   it("devolve 400 para payload fora do formato", async () => {
     const res = await POST(new Request("http://x", { method: "POST", body: JSON.stringify({ object: "outro" }) }));
     expect(res.status).toBe(400);
+  });
+});
+
+describe("POST /api/whatsapp/webhook (autenticação)", () => {
+  it("recusa sem o token quando WHATSAPP_WEBHOOK_SECRET está definido", async () => {
+    vi.stubEnv("WHATSAPP_WEBHOOK_SECRET", "segredo-webhook");
+    const res = await POST(new Request("http://x", { method: "POST", body: JSON.stringify({}) }));
+    expect(res.status).toBe(401);
+  });
+
+  it("aceita com o header x-webhook-token correto", async () => {
+    vi.stubEnv("WHATSAPP_WEBHOOK_SECRET", "segredo-webhook");
+    const res = await POST(
+      new Request("http://x", {
+        method: "POST",
+        headers: { "x-webhook-token": "segredo-webhook" },
+        body: JSON.stringify({
+          event: "message",
+          session: "default",
+          payload: { from: "5598988880001@c.us", body: "Oi", fromMe: false },
+        }),
+      }),
+    );
+    expect(res.status).toBe(200);
   });
 });
 

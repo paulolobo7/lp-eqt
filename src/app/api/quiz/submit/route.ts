@@ -1,5 +1,6 @@
 import { lerJson, semCache } from "@/lib/http";
 import { SELO_PADRAO } from "@/lib/constants";
+import { limitar } from "@/lib/rate-limit";
 import { respostaDeErro, submitQuizSchema } from "@/lib/schemas";
 import { getServices } from "@/lib/services";
 import type { Nivel } from "@/lib/services";
@@ -10,6 +11,9 @@ import type { Nivel } from "@/lib/services";
  * O selo só é emitido com as 3 perguntas certas.
  */
 export async function POST(request: Request) {
+  const bloqueio = limitar(request, "quiz-submit", { max: 20, janelaMs: 60_000 });
+  if (bloqueio) return bloqueio;
+
   const corpo = await lerJson(request);
   if (!corpo.ok) return corpo.resposta;
   const entrada = submitQuizSchema.safeParse(corpo.dados);

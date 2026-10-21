@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { lerJson } from "@/lib/http";
+import { limitar } from "@/lib/rate-limit";
 import { respostaDeErro } from "@/lib/schemas";
+import { webhookAutorizado } from "@/lib/webhook-auth";
 import { processarWebhookWaha } from "@/lib/bot/waha-handler";
 import { processarMensagemBot } from "@/lib/bot/engine";
 import type { WahaPayload } from "@/lib/bot/types";
@@ -33,7 +35,15 @@ const metaPayloadSchema = z.object({
         z.object({
           value: z.object({
             messages: z
-              .array(z.object({ type: z.string(), text: z.object({ body: z.string().max(4096) }).optional() }).passthrough())
+              .array(
+                z
+                  .object({
+                    from: z.string().min(1).max(60),
+                    type: z.string(),
+                    text: z.object({ body: z.string().max(4096) }).optional(),
+                  })
+                  .passthrough(),
+              )
               .optional(),
           }).passthrough(),
         }),
@@ -64,6 +74,16 @@ const wahaPayloadSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const bloqueio = limitar(request, "webhook", { max: 60, janelaMs: 60_000 });
+  if (bloqueio) return bloqueio;
+
+  if (!webhookAutorizado(request)) {
+    if (!process.env.WHATSAPP_WEBHOOK_SECRET && process.env.NODE_ENV === "production") {
+      return Response.json({ erro: "Webhook sem WHATSAPP_WEBHOOK_SECRET configurado." }, { status: 503 });
+    }
+    return Response.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+
   const corpo = await lerJson(request);
   if (!corpo.ok) return corpo.resposta;
 
@@ -88,19 +108,26 @@ export async function POST(request: Request) {
       .flatMap((c) => c.value.messages ?? [])
       .filter((m) => m.type === "text" && m.text);
 
-    // Gera o eco exigido pelos testes unitários de contrato
+    // Eco mantido para o contrato de simulação.
     const respostas = mensagensRecebidas.map((m) => ({ eco: m.text!.body }));
 
-    // Em paralelo, se houver mensagens, processa pelo motor do bot inteligente
-    const processamentos = await Promise.all(
-      mensagensRecebidas.map((m) => processarMensagemBot({ mensagem: m.text!.body }))
-    );
-
+    // Processa em ordem, com identidade por remetente: cada usuário tem sua sessão.
+    const processamentos = [];
+    for (const mensagem of mensagensRecebidas) {
+      processamentos.push(
+        await processarMensagemBot({
+          mensagem: mensagem.text!.body,
+          telefone: mensagem.from,
+          sessao: "meta",
+        }),
+      );
+    }
     const botMensagens = processamentos.flatMap((p) => p.mensagens);
 
     return Response.json({
       simulacao: true,
       respostas,
+      mensagens: botMensagens,
     });
   }
 

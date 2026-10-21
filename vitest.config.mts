@@ -8,6 +8,6 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
     setupFiles: ["./vitest.setup.ts"],
-    env: { USE_MOCKS: "true", BADGE_SECRET: "segredo-de-teste" },
+    env: { USE_MOCKS: "true", BADGE_SECRET: "segredo-de-teste", WAHA_BUFFER_MS: "0" },
   },
 });

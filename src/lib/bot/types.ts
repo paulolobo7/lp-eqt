@@ -42,6 +42,8 @@ export type WahaPayload = {
         PushName?: string;
         Type?: string;
         IsGroup?: boolean;
+        Chat?: string;
+        Sender?: string;
       };
     };
   };
