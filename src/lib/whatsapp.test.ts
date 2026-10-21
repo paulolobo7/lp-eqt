@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { linkWhatsApp, numeroWhatsAppValido } from "./whatsapp";
+import { formatarNumeroWhatsApp, linkWhatsApp, numeroWhatsAppValido } from "./whatsapp";
 
 describe("linkWhatsApp", () => {
   it("monta o link wa.me com a mensagem codificada", () => {
@@ -22,5 +22,19 @@ describe("numeroWhatsAppValido", () => {
     expect(numeroWhatsAppValido("5598999999999")).toBe(true);
     expect(numeroWhatsAppValido("{{NUMERO_WHATSAPP}}")).toBe(false);
     expect(numeroWhatsAppValido(undefined)).toBe(false);
+  });
+});
+
+describe("formatarNumeroWhatsApp", () => {
+  it("formata celular de 13 dígitos com DDI", () => {
+    expect(formatarNumeroWhatsApp("5598999999999")).toBe("+55 (98) 99999-9999");
+  });
+
+  it("formata fixo de 12 dígitos com DDI", () => {
+    expect(formatarNumeroWhatsApp("559820550116")).toBe("+55 (98) 2055-0116");
+  });
+
+  it("não inventa formato para tamanhos inesperados", () => {
+    expect(formatarNumeroWhatsApp("116")).toBe("+116");
   });
 });

@@ -4,6 +4,11 @@
  * Desafio #486 · Hackathon Equatorial
  */
 
+import { QUIZ } from "@/content/quiz";
+
+/** Distância de segurança usada nos textos educativos. */
+export const DISTANCIA_SEGURA = "10 a 15 metros";
+
 export const EQUATORIAL_MA = {
   empresa: "Equatorial Maranhão",
   estado: "Maranhão",
@@ -322,44 +327,23 @@ export const TOPICOS_SEGURANCA: TopicoSeguranca[] = [
   },
 ];
 
-export const PERGUNTAS_QUIZ = [
-  {
-    id: "pergunta-1",
-    numero: 1,
-    pergunta: "Você vê um cabo de energia caído no chão da sua rua. O que você deve fazer imediatamente?",
-    opcoes: [
-      { id: "a", texto: "Tentar afastar o cabo com um pedaço de pau seco." },
-      { id: "b", texto: "Manter pelo menos 10 metros de distância, afastar todos e ligar para a Equatorial no 116.", correta: true },
-      { id: "c", texto: "Pular por cima do fio com cuidado e seguir caminho." },
-      { id: "d", texto: "Cobrir o cabo com uma lona plástica." },
-    ],
-    explicacao:
-      "Correto! Cabos caídos podem estar energizados em alta voltagem. Mantenha distância de 10 a 15 metros, afaste vizinhos e ligue 116.",
-  },
-  {
-    id: "pergunta-2",
-    numero: 2,
-    pergunta: "Uma pipa enroscou na fiação de alta tensão perto da sua casa. Qual é a conduta correta?",
-    opcoes: [
-      { id: "a", texto: "Subir no poste ou no muro com uma vara de bambu para puxar." },
-      { id: "b", texto: "Puxar a linha com força para tentar arrebentar." },
-      { id: "c", texto: "Deixar a pipa lá e não tentar resgatar de jeito nenhum, pois o risco de morte é real.", correta: true },
-      { id: "d", texto: "Jogar uma pedra amarrada em um barbante para derrubar." },
-    ],
-    explicacao:
-      "Isso mesmo! Nunca tente resgatar pipas presas na rede elétrica. A fiação pode disparar arcos elétricos fatais.",
-  },
-  {
-    id: "pergunta-3",
-    numero: 3,
-    pergunta: "Durante uma forte tempestade em São Luís, sua TV e geladeira queimaram por oscilação na rede. O que fazer para pedir ressarcimento à Equatorial?",
-    opcoes: [
-      { id: "a", texto: "Mandar consertar imediatamente na oficina da esquina e depois cobrar da Equatorial." },
-      { id: "b", texto: "Jogar o aparelho fora e comprar outro sem avisar ninguém." },
-      { id: "c", texto: "Não consertar antes da vistoria, ter a Conta Contrato em mãos e pedir ressarcimento em até 90 dias pelo WhatsApp Clara (98 2055-0116) ou 116.", correta: true },
-      { id: "d", texto: "Esperar 1 ano para fazer a reclamação na agência." },
-    ],
-    explicacao:
-      "Perfeito! Não conserte o aparelho antes da avaliação da Equatorial e dê entrada em até 90 dias pelo WhatsApp da Clara (98 2055-0116), 116, App ou site da Equatorial Maranhão.",
-  },
-];
+/**
+ * Quiz do bot derivado da mesma fonte do site (`src/content/quiz.ts`), para o
+ * simulado e o WhatsApp nunca darem respostas diferentes.
+ */
+export type PerguntaQuizBot = {
+  id: string;
+  numero: number;
+  pergunta: string;
+  opcoes: { id: string; texto: string; correta?: boolean }[];
+  explicacao: string;
+};
+
+export const PERGUNTAS_QUIZ: PerguntaQuizBot[] = QUIZ.map((pergunta, indice) => ({
+  id: pergunta.id,
+  numero: indice + 1,
+  pergunta: pergunta.pergunta,
+  opcoes: pergunta.opcoes.map((opcao) => ({ ...opcao, correta: opcao.id === pergunta.correta })),
+  explicacao: pergunta.explicacao,
+}));
+

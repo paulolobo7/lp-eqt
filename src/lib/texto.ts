@@ -1,5 +1,15 @@
 const LIMITE = 20;
 
+/** Minúsculas, sem acentos e com espaços normalizados. Usado para comparar texto livre. */
+export function normalizarTexto(entrada: string): string {
+  return entrada
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
  * Só a primeira palavra, apenas letras (com acento), hífen ou apóstrofo internos,
  * até 20 letras. Nunca guardamos nome completo (LGPD).

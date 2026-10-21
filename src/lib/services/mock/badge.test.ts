@@ -27,6 +27,21 @@ describe("MockBadgeService", () => {
     expect(s.primeiroNome).toBe("Vizinho");
   });
 
+  it("usa o bairro padrão quando o bairro fica vazio e continua legível", async () => {
+    const s = await svc.emitir({ primeiroNome: "Ana", bairro: "   ", nivel: "alto" }, agora);
+    expect(s.bairro).toBe("Minha vizinhança");
+    expect(await svc.ler(s.id)).toEqual(s);
+  });
+
+  it("usa a data local de São Luís, não a data UTC", async () => {
+    // 01:30 UTC de 22/10 ainda é 21/10 em São Luís (UTC−3).
+    const s = await svc.emitir(
+      { primeiroNome: "Ana", bairro: "Vila Esperança", nivel: "alto" },
+      new Date("2026-10-22T01:30:00Z"),
+    );
+    expect(s.data).toBe("2026-10-21");
+  });
+
   it("recusa id adulterado", async () => {
     const s = await svc.emitir({ primeiroNome: "Ana", bairro: "Vila Esperança", nivel: "alto" }, agora);
     const [dados, assinatura] = s.id.split(".");

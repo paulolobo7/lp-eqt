@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { chat } from "@/content/site";
+import { SELO_PADRAO } from "@/lib/constants";
 import { primeiroNome } from "@/lib/texto";
 import type { BadgeService, DadosSelo, Selo } from "../types";
 
@@ -13,6 +13,20 @@ const carga = z.object({
 
 const ALFABETO = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
+const formatoData = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Fortaleza",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** Data local de São Luís (UTC−3), não a data UTC do servidor. */
+function dataLocalISO(agora: Date): string {
+  const partes = formatoData.formatToParts(agora);
+  const valor = (tipo: Intl.DateTimeFormatPartTypes) => partes.find((parte) => parte.type === tipo)?.value ?? "";
+  return `${valor("year")}-${valor("month")}-${valor("day")}`;
+}
+
 /**
  * Selo sem banco: o id é a própria carga (primeiro nome, bairro, faixa e data)
  * em base64url, assinada com HMAC. Nada é persistido.
@@ -22,10 +36,10 @@ export class MockBadgeService implements BadgeService {
 
   async emitir(dados: Omit<DadosSelo, "data">, agora = new Date()): Promise<Selo> {
     const c = {
-      n: primeiroNome(dados.primeiroNome) || chat.nomePadrao,
-      b: dados.bairro.trim().slice(0, 60),
+      n: primeiroNome(dados.primeiroNome) || SELO_PADRAO.nome,
+      b: dados.bairro.trim().slice(0, 60) || SELO_PADRAO.bairro,
       f: dados.nivel,
-      d: agora.toISOString().slice(0, 10),
+      d: dataLocalISO(agora),
     };
     const corpo = Buffer.from(JSON.stringify(c)).toString("base64url");
     const assinatura = this.assinar(corpo);

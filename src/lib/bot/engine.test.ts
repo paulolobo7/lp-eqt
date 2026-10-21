@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest";
-import { formatarMensagensWhatsApp, processarMensagemBot, ativarBloqueioHumano } from "./engine";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { getServices } from "../services";
+import { ativarBloqueioHumano, formatarMensagensWhatsApp, processarMensagemBot } from "./engine";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
+
+const iniciarQuiz = (sessao: string, telefone: string, nome?: string) =>
+  processarMensagemBot({ mensagem: "quero fazer o quiz", sessao, telefone, nome });
 
 describe("Bot Engine - Vizinho de Alta Tensão (Equatorial Maranhão)", () => {
   it("responde com boas-vindas acolhedoras ao receber 'oi'", async () => {
@@ -61,29 +70,105 @@ describe("Bot Engine - Vizinho de Alta Tensão (Equatorial Maranhão)", () => {
     expect(res.mensagens.join(" ")).toContain("Cohatrac");
   });
 
-  it("executa o fluxo do Quiz do Vizinho Consciente com 3 perguntas e gera selo ao acertar todas", async () => {
+  it("não deixa o reconhecimento de bairro engolir uma pergunta de risco", async () => {
+    const res = await processarMensagemBot({
+      mensagem: "moro no Cohatrac e caiu um cabo na minha rua",
+      sessao: "test-bairro-risco",
+      telefone: "5598999990010",
+    });
+    const texto = res.mensagens.join(" ");
+    expect(texto).toContain("Cabo caído");
+    expect(texto).not.toContain("Reconheci o seu bairro");
+    expect(res.bairroReconhecido).toBe("Cohatrac");
+  });
+
+  it("reconhece tópicos com acento (faísca) sem cair em pipas por causa do poste", async () => {
+    const res = await processarMensagemBot({
+      mensagem: "tem faísca no poste da rua",
+      sessao: "test-acento",
+      telefone: "5598999990011",
+    });
+    expect(res.mensagens.join(" ")).toContain("Arcos elétricos");
+  });
+
+  it("não trata 'oi, caiu a luz' como saudação e orienta os canais", async () => {
+    const res = await processarMensagemBot({
+      mensagem: "oi, caiu a luz",
+      sessao: "test-luz",
+      telefone: "5598999990012",
+    });
+    const texto = res.mensagens.join(" ");
+    expect(texto).toContain("Canais Oficiais");
+    expect(texto).not.toContain("assistente oficial do programa");
+  });
+
+  it("executa o fluxo do Quiz e gera selo ao acertar todas", async () => {
     const sessao = "quiz-test-sessao";
     const telefone = "5598988887777";
 
-    // 1. Inicia o quiz
-    const inicio = await processarMensagemBot({ mensagem: "quero fazer o quiz", sessao, telefone, nome: "Carlos" });
+    const inicio = await iniciarQuiz(sessao, telefone, "Carlos");
     expect(inicio.mensagens.join(" ")).toContain("Pergunta 1 de 3");
+    expect(inicio.mensagens.join(" ")).toContain("A, B ou C");
 
-    // 2. Responde pergunta 1: correta é B
-    const resp1 = await processarMensagemBot({ mensagem: "B", sessao, telefone, nome: "Carlos" });
+    // A fonte única do quiz (src/content/quiz.ts): Q1 = B, Q2 = C, Q3 = A.
+    const resp1 = await processarMensagemBot({ mensagem: "B", sessao, telefone });
     expect(resp1.mensagens.join(" ")).toContain("Correto");
     expect(resp1.mensagens.join(" ")).toContain("Pergunta 2 de 3");
 
-    // 3. Responde pergunta 2: correta é C
-    const resp2 = await processarMensagemBot({ mensagem: "C", sessao, telefone, nome: "Carlos" });
+    const resp2 = await processarMensagemBot({ mensagem: "C", sessao, telefone });
     expect(resp2.mensagens.join(" ")).toContain("Correto");
     expect(resp2.mensagens.join(" ")).toContain("Pergunta 3 de 3");
 
-    // 4. Responde pergunta 3: correta é C
-    const resp3 = await processarMensagemBot({ mensagem: "C", sessao, telefone, nome: "Carlos" });
+    const resp3 = await processarMensagemBot({ mensagem: "A", sessao, telefone });
     expect(resp3.mensagens.join(" ")).toContain("PARABÉNS");
     expect(resp3.mensagens.join(" ")).toContain("Selo Oficial");
     expect(resp3.seloId).toBeDefined();
+  });
+
+  it("não aceita texto livre como resposta do quiz ('beleza' não vira B)", async () => {
+    const sessao = "quiz-texto-livre";
+    const telefone = "5598999990020";
+    await iniciarQuiz(sessao, telefone);
+    const res = await processarMensagemBot({ mensagem: "beleza", sessao, telefone });
+    expect(res.mensagens.join(" ")).toContain("Por favor, responda");
+    expect(res.mensagens.join(" ")).toContain("Pergunta 1 de 3");
+  });
+
+  it("não duplica o elogio nem chama de 'Correto' uma resposta errada", async () => {
+    const sessao = "quiz-feedback";
+    const telefone = "5598999990021";
+    await iniciarQuiz(sessao, telefone);
+    const res = await processarMensagemBot({ mensagem: "A", sessao, telefone });
+    const texto = res.mensagens.join(" ");
+    expect(texto).toContain("Quase lá");
+    expect(texto).not.toContain("Correto!");
+  });
+
+  it("mostra só o primeiro nome no selo e não vaza o nome completo do perfil", async () => {
+    const sessao = "quiz-nome";
+    const telefone = "5598999990022";
+    await iniciarQuiz(sessao, telefone, "João da Silva Santos");
+    await processarMensagemBot({ mensagem: "B", sessao, telefone });
+    await processarMensagemBot({ mensagem: "C", sessao, telefone });
+    const res = await processarMensagemBot({ mensagem: "A", sessao, telefone });
+
+    const texto = res.mensagens.join(" ");
+    expect(texto).toContain("JOÃO");
+    expect(texto).not.toContain("SILVA");
+    expect(res.seloId).toBeDefined();
+    const selo = await getServices().badge.ler(res.seloId!);
+    expect(selo?.primeiroNome).toBe("João");
+  });
+
+  it("usa a URL pública configurada no link do selo", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://vizinho.teste");
+    const sessao = "quiz-link";
+    const telefone = "5598999990023";
+    await iniciarQuiz(sessao, telefone);
+    await processarMensagemBot({ mensagem: "B", sessao, telefone });
+    await processarMensagemBot({ mensagem: "C", sessao, telefone });
+    const res = await processarMensagemBot({ mensagem: "A", sessao, telefone });
+    expect(res.mensagens.join(" ")).toContain("https://vizinho.teste/selo/");
   });
 
   it("respeita o bloqueio de atendimento humano (anti-colisão com atendente)", async () => {
@@ -100,7 +185,7 @@ describe("Bot Engine - Vizinho de Alta Tensão (Equatorial Maranhão)", () => {
     expect(res.mensagens).toHaveLength(0);
   });
 
-  it("divide mensagens longas no padrão humanizado do WhatsApp (máximo 4)", () => {
+  it("divide mensagens longas sem descartar o último parágrafo (máximo 4)", () => {
     const textoLongo = `Primeiro parágrafo de introdução sobre a alta tensão na comunidade.
 
 Segundo parágrafo detalhando os cabos caídos e como proceder para não sofrer choques perigosos.
@@ -114,5 +199,29 @@ Quinto parágrafo adicional para testar o limite de blocos.`;
     const msgs = formatarMensagensWhatsApp(textoLongo);
     expect(msgs.length).toBeLessThanOrEqual(4);
     expect(msgs.length).toBeGreaterThan(1);
+    expect(msgs.join(" ")).toContain("Quinto parágrafo adicional");
+  });
+
+  it("usa a OpenAI sem o erro de variável e sem duplicar a mensagem atual", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "chave-de-teste");
+    const chamadas: Array<{ body: unknown }> = [];
+    vi.stubGlobal("fetch", async (_url: string, init?: RequestInit) => {
+      chamadas.push({ body: init?.body ? JSON.parse(String(init.body)) : null });
+      return Response.json({
+        choices: [{ message: { content: "Resposta de teste. Veja https://exemplo-malicioso.com" } }],
+      });
+    });
+
+    const res = await processarMensagemBot({
+      mensagem: "qual a cor do céu?",
+      sessao: "openai-test",
+      telefone: "5598999990030",
+    });
+
+    expect(res.mensagens.join(" ")).toContain("Resposta de teste");
+    expect(res.mensagens.join(" ")).toContain("(link removido)");
+    expect(chamadas).toHaveLength(1);
+    const corpo = chamadas[0].body as { messages: Array<{ role: string; content: string }> };
+    expect(corpo.messages.filter((m) => m.content === "qual a cor do céu?")).toHaveLength(1);
   });
 });
